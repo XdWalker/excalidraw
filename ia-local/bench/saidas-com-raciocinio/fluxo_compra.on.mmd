@@ -1,0 +1,8 @@
+flowchart TD
+  A["Carrinho"] --> B["Checkout"]
+  B --> C{"Pagamento aprovado?"}
+  C -->|"Sim"| D["Separação no estoque"]
+  C -->|"Não"| E["Tentar outro cartão"]
+  E --> C
+  D --> F["Envio"]
+  F --> G["Entrega"]

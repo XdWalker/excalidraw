@@ -1,0 +1,280 @@
+{
+  "title": "Página inicial de um site de venda de carros",
+  "root": {
+    "kind": "page",
+    "children": [
+      {
+        "kind": "header",
+        "label": "Cabeçalho",
+        "children": [
+          {
+            "kind": "image",
+            "label": "Logo"
+          },
+          {
+            "kind": "nav",
+            "label": "Menu principal",
+            "children": [
+              {
+                "kind": "button",
+                "label": "Início"
+              },
+              {
+                "kind": "button",
+                "label": "Comprar"
+              },
+              {
+                "kind": "button",
+                "label": "Vender"
+              },
+              {
+                "kind": "button",
+                "label": "Contato"
+              }
+            ]
+          },
+          {
+            "kind": "button",
+            "label": "Entrar"
+          }
+        ]
+      },
+      {
+        "kind": "section",
+        "label": "Busca rápida",
+        "children": [
+          {
+            "kind": "text",
+            "label": "Encontre seu carro"
+          },
+          {
+            "kind": "form",
+            "label": "Filtros de busca",
+            "children": [
+              {
+                "kind": "input",
+                "label": "Marca"
+              },
+              {
+                "kind": "input",
+                "label": "Modelo"
+              },
+              {
+                "kind": "input",
+                "label": "Ano"
+              },
+              {
+                "kind": "input",
+                "label": "Preço máximo"
+              },
+              {
+                "kind": "button",
+                "label": "Buscar carros"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "section",
+        "label": "Carros em destaque",
+        "children": [
+          {
+            "kind": "text",
+            "label": "Veículos selecionados"
+          },
+          {
+            "kind": "grid",
+            "label": "Lista de carros",
+            "columns": 4,
+            "children": [
+              {
+                "kind": "card",
+                "label": "Carro 1",
+                "children": [
+                  {
+                    "kind": "image",
+                    "label": "Foto do carro"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Nome"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Preço"
+                  },
+                  {
+                    "kind": "button",
+                    "label": "Ver detalhes"
+                  }
+                ]
+              },
+              {
+                "kind": "card",
+                "label": "Carro 2",
+                "children": [
+                  {
+                    "kind": "image",
+                    "label": "Foto do carro"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Nome"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Preço"
+                  },
+                  {
+                    "kind": "button",
+                    "label": "Ver detalhes"
+                  }
+                ]
+              },
+              {
+                "kind": "card",
+                "label": "Carro 3",
+                "children": [
+                  {
+                    "kind": "image",
+                    "label": "Foto do carro"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Nome"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Preço"
+                  },
+                  {
+                    "kind": "button",
+                    "label": "Ver detalhes"
+                  }
+                ]
+              },
+              {
+                "kind": "card",
+                "label": "Carro 4",
+                "children": [
+                  {
+                    "kind": "image",
+                    "label": "Foto do carro"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Nome"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Preço"
+                  },
+                  {
+                    "kind": "button",
+                    "label": "Ver detalhes"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "section",
+        "label": "Vantagens",
+        "children": [
+          {
+            "kind": "text",
+            "label": "Por que comprar conosco"
+          },
+          {
+            "kind": "grid",
+            "label": "Lista de vantagens",
+            "columns": 3,
+            "children": [
+              {
+                "kind": "card",
+                "label": "Vantagem 1",
+                "children": [
+                  {
+                    "kind": "image",
+                    "label": "Ícone"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Garantia"
+                  }
+                ]
+              },
+              {
+                "kind": "card",
+                "label": "Vantagem 2",
+                "children": [
+                  {
+                    "kind": "image",
+                    "label": "Ícone"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Troca facilitada"
+                  }
+                ]
+              },
+              {
+                "kind": "card",
+                "label": "Vantagem 3",
+                "children": [
+                  {
+                    "kind": "image",
+                    "label": "Ícone"
+                  },
+                  {
+                    "kind": "text",
+                    "label": "Entrega"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "footer",
+        "label": "Rodapé",
+        "children": [
+          {
+            "kind": "text",
+            "label": "Sobre a loja"
+          },
+          {
+            "kind": "nav",
+            "label": "Links rápidos",
+            "children": [
+              {
+                "kind": "button",
+                "label": "Início"
+              },
+              {
+                "kind": "button",
+                "label": "Comprar"
+              },
+              {
+                "kind": "button",
+                "label": "Vender"
+              },
+              {
+                "kind": "button",
+                "label": "Contato"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "label": "Copyright"
+          }
+        ]
+      }
+    ]
+  }
+}

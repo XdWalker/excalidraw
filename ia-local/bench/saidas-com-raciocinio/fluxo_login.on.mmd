@@ -1,0 +1,7 @@
+flowchart TD
+    A["Usuário digita e-mail e senha"] --> B["Sistema valida credenciais"]
+    B --> C{"Credenciais válidas?"}
+    C -->|Não| D["Mostra erro"]
+    D --> A
+    C -->|Sim| E["Verifica autenticação em dois fatores"]
+    E --> F["Abre painel"]

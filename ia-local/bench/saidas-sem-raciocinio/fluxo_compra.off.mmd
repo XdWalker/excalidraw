@@ -1,0 +1,9 @@
+flowchart TD
+    A("Adicionar ao carrinho") --> B("Checkout")
+    B --> C("Processar pagamento")
+    C --> D{"Pagamento aprovado?"}
+    D -- "Sim" --> E("Separação no estoque")
+    D -- "Não" --> F("Tentar outro cartão")
+    F --> C
+    E --> G("Envio")
+    G --> H("Entrega")

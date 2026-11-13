@@ -1,0 +1,47 @@
+{
+  "title": "Login",
+  "root": {
+    "kind": "page",
+    "children": [
+      {
+        "kind": "header",
+        "children": [
+          {
+            "kind": "text",
+            "label": "Banco Digital"
+          }
+        ]
+      },
+      {
+        "kind": "section",
+        "children": [
+          {
+            "kind": "form",
+            "children": [
+              {
+                "kind": "input",
+                "label": "CPF ou Usuário"
+              },
+              {
+                "kind": "input",
+                "label": "Senha"
+              },
+              {
+                "kind": "button",
+                "label": "Entrar"
+              }
+            ]
+          },
+          {
+            "kind": "text",
+            "label": "Esqueci minha senha"
+          }
+        ]
+      },
+      {
+        "kind": "footer",
+        "children": []
+      }
+    ]
+  }
+}

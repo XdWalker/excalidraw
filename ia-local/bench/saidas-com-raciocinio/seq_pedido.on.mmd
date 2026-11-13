@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant C as Cliente
+    participant A as API
+    participant B as Banco de Dados
+    participant P as Serviço de Pagamento
+
+    C ->> A: "Enviar pedido"
+    A ->> B: "Validar estoque"
+    B -->> A: "Estoque disponível"
+    A ->> P: "Processar pagamento"
+    P -->> A: "Pagamento aprovado"
+    A ->> B: "Registrar pedido"
+    B -->> A: "Pedido registrado"
+    A -->> C: "Confirmação"

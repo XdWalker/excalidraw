@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Cliente
+    participant API
+    participant Banco_de_Dados as "Banco de Dados"
+    participant Pagamento as "Serviço de Pagamento"
+    Cliente->>API: Enviar Pedido
+    API->>Banco_de_Dados: Salvar Pedido
+    Banco_de_Dados-->>API: Confirmar Gravação
+    API->>Pagamento: Processar Pagamento
+    Pagamento-->>API: Resultado do Pagamento
+    API->>Banco_de_Dados: Atualizar Status
+    Banco_de_Dados-->>API: Confirmar Atualização
+    API-->>Cliente: Resposta do Pedido

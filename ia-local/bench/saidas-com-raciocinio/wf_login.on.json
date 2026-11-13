@@ -1,0 +1,22 @@
+{
+  "title": "Screen",
+  "root": {
+    "kind": "page",
+    "label": "Tela",
+    "children": [
+      {
+        "kind": "section",
+        "label": "Container",
+        "children": [
+          { "kind": "image", "label": "Logo" },
+          { "kind": "text", "label": "Acessar" },
+          { "kind": "input", "label": "Usuário" },
+          { "kind": "input", "label": "Senha" },
+          { "kind": "button", "label": "Entrar" },
+          { "kind": "text", "label": "Biometria" },
+          { "kind": "text", "label": "Suporte" }
+        ]
+      }
+    ]
+  }
+}

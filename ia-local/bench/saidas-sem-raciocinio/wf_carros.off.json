@@ -1,0 +1,153 @@
+{
+  "title": "Carro Premium - Detalhes",
+  "root": {
+    "kind": "nav",
+    "children": [
+      {
+        "kind": "nav",
+        "children": [
+          { "kind": "text", "label": "Logo" },
+          {
+            "kind": "nav",
+            "children": [
+              { "kind": "text", "label": "Início" },
+              { "kind": "text", "label": "Comprar" },
+              { "kind": "text", "label": "Vender" },
+              { "kind": "text", "label": "Financiamento" }
+            ]
+          },
+          { "kind": "button", "label": "Entrar" },
+          { "kind": "button", "label": "Anunciar Carro" }
+        ]
+      },
+      {
+        "kind": "hero",
+        "children": [
+          {
+            "kind": "text",
+            "label": "Encontre o carro dos seus sonhos"
+          },
+          {
+            "kind": "text",
+            "label": "Mais de 10.000 veículos seminovos e usados com garantia"
+          },
+          {
+            "kind": "form",
+            "children": [
+              {
+                "kind": "input",
+                "label": "Marca ou Modelo"
+              },
+              {
+                "kind": "input",
+                "label": "Ano"
+              },
+              {
+                "kind": "input",
+                "label": "Preço Máximo"
+              },
+              {
+                "kind": "button",
+                "label": "Buscar"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "grid",
+        "columns": 3,
+        "children": [
+          {
+            "kind": "card",
+            "children": [
+              { "kind": "image", "label": "Carro 1" },
+              { "kind": "text", "label": "SUV 2022" },
+              { "kind": "text", "label": "R$ 150.000" },
+              { "kind": "button", "label": "Ver Detalhes" }
+            ]
+          },
+          {
+            "kind": "card",
+            "children": [
+              { "kind": "image", "label": "Carro 2" },
+              { "kind": "text", "label": "Sedã 2021" },
+              { "kind": "text", "label": "R$ 120.000" },
+              { "kind": "button", "label": "Ver Detalhes" }
+            ]
+          },
+          {
+            "kind": "card",
+            "children": [
+              { "kind": "image", "label": "Carro 3" },
+              { "kind": "text", "label": "Hatch 2023" },
+              { "kind": "text", "label": "R$ 95.000" },
+              { "kind": "button", "label": "Ver Detalhes" }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "section",
+        "label": "Categorias Populares",
+        "children": [
+          {
+            "kind": "grid",
+            "columns": 4,
+            "children": [
+              {
+                "kind": "card",
+                "children": [
+                  { "kind": "image", "label": "SUV" },
+                  { "kind": "text", "label": "SUVs" }
+                ]
+              },
+              {
+                "kind": "card",
+                "children": [
+                  { "kind": "image", "label": "Sedã" },
+                  { "kind": "text", "label": "Sedãs" }
+                ]
+              },
+              {
+                "kind": "card",
+                "children": [
+                  { "kind": "image", "label": "Hatch" },
+                  { "kind": "text", "label": "Hatchbacks" }
+                ]
+              },
+              {
+                "kind": "card",
+                "children": [
+                  { "kind": "image", "label": "Picape" },
+                  { "kind": "text", "label": "Picapes" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "footer",
+        "children": [
+          {
+            "kind": "text",
+            "label": "Sobre Nós"
+          },
+          {
+            "kind": "text",
+            "label": "Suporte"
+          },
+          {
+            "kind": "text",
+            "label": "Termos de Uso"
+          },
+          {
+            "kind": "text",
+            "label": "Política de Privacidade"
+          }
+        ]
+      }
+    ]
+  }
+}
