@@ -42,6 +42,7 @@ export const TTDChatPanel = ({
   onViewAsMermaid,
   renderWelcomeScreen,
   renderWarning,
+  renderChatHeader,
 }: {
   chatId: string;
   messages: TChat.ChatMessage[];
@@ -71,6 +72,7 @@ export const TTDChatPanel = ({
 
   renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
   renderWarning?: TTTDDialog.renderWarning;
+  renderChatHeader?: TTTDDialog.renderChatHeader;
 }) => {
   const [rateLimits] = useAtom(rateLimitsAtom);
 
@@ -117,7 +119,9 @@ export const TTDChatPanel = ({
     <TTDDialogPanel
       label={
         <div className="ttd-dialog-panel__label-wrapper">
-          <div className="ttd-dialog-panel__label-group"></div>
+          <div className="ttd-dialog-panel__label-group">
+            {renderChatHeader?.()}
+          </div>
           <div className="ttd-dialog-panel__header-right">
             <ChatHistoryMenu
               isNewChatBtnVisible={!!messages.length}

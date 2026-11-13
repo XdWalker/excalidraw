@@ -33,6 +33,7 @@ export const TTDDialog = (
         onTextSubmit: TTTDDialog.onTextSubmit;
         renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
         renderWarning?: TTTDDialog.renderWarning;
+        renderChatHeader?: TTTDDialog.renderChatHeader;
         persistenceAdapter: TTDPersistenceAdapter;
       }
     | { __fallback: true },
@@ -94,6 +95,7 @@ const TTDDialogBase = withInternalFallback(
         ): Promise<TTTDDialog.OnTextSubmitRetValue>;
         renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
         renderWarning?: TTTDDialog.renderWarning;
+        renderChatHeader?: TTTDDialog.renderChatHeader;
         persistenceAdapter: TTDPersistenceAdapter;
       }
     | { __fallback: true }
@@ -208,6 +210,7 @@ const TTDDialogBase = withInternalFallback(
                 onTextSubmit={rest.onTextSubmit}
                 renderWelcomeScreen={rest.renderWelcomeScreen}
                 renderWarning={rest.renderWarning}
+                renderChatHeader={rest.renderChatHeader}
                 persistenceAdapter={rest.persistenceAdapter}
               />
             </TTDDialogTab>

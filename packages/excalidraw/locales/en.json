@@ -785,5 +785,26 @@
     "spacebar": "Space",
     "delete": "Delete",
     "mmb": "Scroll wheel"
+  },
+  "localAI": {
+    "badge": "Local AI",
+    "statusOnline": "connected",
+    "statusOffline": "offline",
+    "statusChecking": "checking…",
+    "settingsTitle": "Local AI settings",
+    "serverUrl": "Server URL (OpenAI-compatible API)",
+    "model": "Model",
+    "modelAuto": "Automatic (first available)",
+    "test": "Test connection",
+    "save": "Save",
+    "reset": "Restore default",
+    "modelsFound": "{{count}} model(s) found",
+    "privacyNote": "Requests go only to this address on your machine. Nothing is sent to Excalidraw servers.",
+    "errors": {
+      "unreachable": "Couldn't reach the local AI at {{url}}. Check that the server is running and allows requests from this page (CORS).",
+      "serverError": "The local AI returned an error ({{status}}): {{message}}",
+      "noModels": "The local AI server has no models available.",
+      "generationFailed": "The local AI returned an empty response."
+    }
   }
 }

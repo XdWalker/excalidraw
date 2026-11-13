@@ -39,6 +39,7 @@ const TextToDiagramContent = ({
   onTextSubmit,
   renderWelcomeScreen,
   renderWarning,
+  renderChatHeader,
   persistenceAdapter,
 }: {
   mermaidToExcalidrawLib: MermaidToExcalidrawLibProps;
@@ -48,6 +49,7 @@ const TextToDiagramContent = ({
   ) => Promise<TTTDDialog.OnTextSubmitRetValue>;
   renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
   renderWarning?: TTTDDialog.renderWarning;
+  renderChatHeader?: TTTDDialog.renderChatHeader;
   persistenceAdapter: TTDPersistenceAdapter;
 }) => {
   const app = useApp();
@@ -241,6 +243,7 @@ const TextToDiagramContent = ({
         onRetry={handleRetry}
         onViewAsMermaid={onViewAsMermaid}
         renderWarning={renderWarning}
+        renderChatHeader={renderChatHeader}
         renderWelcomeScreen={renderWelcomeScreen}
       />
       {showPreview && (
@@ -264,6 +267,7 @@ export const TextToDiagram = ({
   onTextSubmit,
   renderWelcomeScreen,
   renderWarning,
+  renderChatHeader,
   persistenceAdapter,
 }: {
   mermaidToExcalidrawLib: MermaidToExcalidrawLibProps;
@@ -273,6 +277,7 @@ export const TextToDiagram = ({
   ): Promise<TTTDDialog.OnTextSubmitRetValue>;
   renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
   renderWarning?: TTTDDialog.renderWarning;
+  renderChatHeader?: TTTDDialog.renderChatHeader;
   persistenceAdapter: TTDPersistenceAdapter;
 }) => {
   return (
@@ -282,6 +287,7 @@ export const TextToDiagram = ({
       onTextSubmit={onTextSubmit}
       renderWelcomeScreen={renderWelcomeScreen}
       renderWarning={renderWarning}
+      renderChatHeader={renderChatHeader}
       persistenceAdapter={persistenceAdapter}
     />
   );

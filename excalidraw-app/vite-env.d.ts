@@ -14,6 +14,10 @@ interface ImportMetaEnv {
   // set this only if using the collaboration workflow we use on excalidraw.com
   VITE_APP_PORTAL_URL: string;
   VITE_APP_AI_BACKEND: string;
+  // IA local (fork ia-local): servidor compatível com a API da OpenAI
+  VITE_APP_LOCAL_LLM_URL: string;
+  // vazio = primeiro modelo listado pelo servidor
+  VITE_APP_LOCAL_LLM_MODEL: string;
 
   VITE_APP_FIREBASE_CONFIG: string;
 

@@ -51,3 +51,52 @@ As saídas brutas estão em `bench/saidas-*`.
 ![Texto para diagrama sem o servidor do Excalidraw](prints/fase0-antes-texto-para-diagrama.jpg)
 
 Em modo de desenvolvimento, o "Texto para diagrama" chama `http://localhost:3016`, que não existe, e mostra "Error: Failed to fetch".
+
+## Fase 1 — IA local no "Texto para diagrama" (12/11/2026)
+
+### O que mudou
+
+- **Novo cliente** [`excalidraw-app/ai/localLLM.ts`](../excalidraw-app/ai/localLLM.ts):
+  - Fala com qualquer servidor compatível com a API de chat da OpenAI (llama.cpp, Ollama, LM Studio), direto do navegador, sem backend nem proxy.
+  - Prompt de sistema próprio (só Mermaid, rótulos no idioma do pedido) e raciocínio desligado.
+  - Converte o streaming `choices[0].delta.content` para o formato que o diálogo espera.
+  - Limpa cercas ` ``` ` e blocos `<think>` ainda durante o streaming.
+  - Erros claros: servidor fora do ar, erro HTTP, resposta vazia, cancelamento.
+- **[`excalidraw-app/components/AI.tsx`](../excalidraw-app/components/AI.tsx)**: o diálogo passa a usar o cliente local no lugar do backend do excalidraw.com. O "Wireframe para código" continua como estava.
+- **Selo "IA local · modelo @ host"** no cabeçalho do chat ([`LocalAIStatus.tsx`](../excalidraw-app/components/LocalAIStatus.tsx)):
+  - Bolinha verde ou vermelha conforme a conexão.
+  - Painel para trocar o endereço e o modelo, com "Testar conexão" e "Restaurar padrão". A escolha fica salva no `localStorage`.
+- **Pacote do editor**:
+  - Nova prop opcional `renderChatHeader` no `TTDDialog`, para o app mostrar o selo.
+  - **Correção de um defeito do próprio Excalidraw** em [`useMermaidRenderer.ts`](../packages/excalidraw/components/TTDDialog/hooks/useMermaidRenderer.ts). Se a resposta terminava enquanto a pré-visualização ainda desenhava um trecho parcial, a versão final era descartada: a pré-visualização e o "Inserir" ficavam só com os primeiros nós. Com o servidor deles, lento, isso quase nunca acontece; com o Qwen local (~1,5 s por fluxograma), acontecia sempre. Agora o último pedido pendente é desenhado quando o anterior termina.
+- **Configuração**:
+  - `VITE_APP_LOCAL_LLM_URL` e `VITE_APP_LOCAL_LLM_MODEL` em `.env.development` e `.env.production`. O padrão é o Ollama (`http://127.0.0.1:11434/v1`).
+  - Na máquina de desenvolvimento, `.env.development.local` (fora do git) aponta para o llama.cpp em `:9931`.
+- **Textos** em inglês e português (`localAI.*` nos arquivos de idioma).
+
+### Verificação
+
+- **Testes automáticos:**
+  - 16 testes novos em `excalidraw-app/ai/localLLM.test.ts` cobrem streaming, limpeza, configuração, modelo automático, servidor fora do ar, erro HTTP, 429, resposta vazia e cancelamento.
+  - Os testes existentes do diálogo, do Mermaid e do app continuam passando (154 no total).
+  - Typecheck e ESLint sem erros.
+- **No navegador** (painel do Claude Code, Chromium):
+  - Fluxograma de compra gerado e desenhado completo (8 etapas, decisão e laço).
+  - Ajuste no mesmo chat ("adicione nota fiscal antes do envio") funcionou.
+  - Endereço errado: selo vermelho e mensagem clara no chat.
+  - Diagramas de sequência e de estados gerados sem as aspas que apareciam na fase 0.
+  - Nas requisições observadas, só houve chamadas para `127.0.0.1`.
+- **Validação humana no Firefox (12/11/2026, 23:42): aprovada.**
+  - Três fluxogramas gerados e inseridos no quadro.
+  - O da esquerda ("comprar GTA 6": 4 decisões, 7 desfechos que convergem) foi feito **com a internet desligada**.
+  - Os outros dois foram feitos com a internet ligada.
+
+![Validação no Firefox: o fluxograma da esquerda foi gerado offline](prints/fase1-firefox-validacao.webp)
+
+### Observação para depois
+
+Pedidos curtos tendem a virar fluxogramas lineares, e às vezes o processo é linear mesmo. Quando o pedido descreve condições e caminhos, o modelo gera ramificações (caso do GTA 6). Isso pode ser refinado no prompt ou em perfis de geração mais adiante.
+
+![Depois: fluxograma gerado pela IA local](prints/fase1-depois-fluxograma.jpg)
+
+![Configuração da IA local](prints/fase1-configuracao.jpg)

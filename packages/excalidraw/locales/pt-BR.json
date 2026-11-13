@@ -752,5 +752,26 @@
     "spacebar": "Barra de espaço",
     "delete": "Delete",
     "mmb": "Roda do mouse"
+  },
+  "localAI": {
+    "badge": "IA local",
+    "statusOnline": "conectada",
+    "statusOffline": "desconectada",
+    "statusChecking": "verificando…",
+    "settingsTitle": "Configurar IA local",
+    "serverUrl": "Endereço do servidor (API compatível com OpenAI)",
+    "model": "Modelo",
+    "modelAuto": "Automático (primeiro disponível)",
+    "test": "Testar conexão",
+    "save": "Salvar",
+    "reset": "Restaurar padrão",
+    "modelsFound": "{{count}} modelo(s) encontrado(s)",
+    "privacyNote": "Os pedidos vão só para este endereço na sua máquina. Nada é enviado aos servidores do Excalidraw.",
+    "errors": {
+      "unreachable": "Não foi possível conectar à IA local em {{url}}. Verifique se o servidor está rodando e se aceita pedidos desta página (CORS).",
+      "serverError": "A IA local respondeu com erro ({{status}}): {{message}}",
+      "noModels": "O servidor da IA local não tem nenhum modelo disponível.",
+      "generationFailed": "A IA local devolveu uma resposta vazia."
+    }
   }
 }

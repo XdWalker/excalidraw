@@ -130,6 +130,12 @@ export namespace TTTDDialog {
     chatMessage: TChat.ChatMessage,
   ) => React.ReactNode | undefined;
 
+  /**
+   * extra content rendered in the chat panel header (e.g. which AI
+   * backend/model is in use)
+   */
+  export type renderChatHeader = () => React.ReactNode;
+
   export type renderWelcomeScreen = (props: {
     /** null if not rate limit data currently available */
     rateLimits: RateLimits | null;

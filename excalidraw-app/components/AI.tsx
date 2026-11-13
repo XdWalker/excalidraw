@@ -5,7 +5,6 @@ import {
   getTextFromElements,
   parseSSEStream,
   TTDDialog,
-  TTDStreamFetch,
   THEME,
   useOnExcalidrawStateChange,
 } from "@excalidraw/excalidraw";
@@ -15,8 +14,11 @@ import { safelyParseJSON } from "@excalidraw/common";
 import type { StreamChunk } from "@excalidraw/excalidraw";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
+import { loadLocalLLMConfig, localLLMStreamFetch } from "../ai/localLLM";
 import { cacheMermaidChunks } from "../data/cacheMermaidChunks";
 import { TTDIndexedDBAdapter } from "../data/TTDStorage";
+
+import { LocalAIStatus } from "./LocalAIStatus";
 
 export const AIComponents = ({
   excalidrawAPI,
@@ -163,22 +165,12 @@ export const AIComponents = ({
       />
 
       <TTDDialog
-        onTextSubmit={async (props) => {
-          const { onChunk, onStreamCreated, signal, messages } = props;
-
-          const result = await TTDStreamFetch({
-            url: `${
-              import.meta.env.VITE_APP_AI_BACKEND
-            }/v1/ai/text-to-diagram/chat-streaming`,
-            messages,
-            onChunk,
-            onStreamCreated,
-            extractRateLimits: true,
-            signal,
-          });
-
-          return result;
-        }}
+        // IA local (fork ia-local): em vez do backend do excalidraw.com, o
+        // pedido vai direto do navegador para o servidor LLM da máquina
+        onTextSubmit={(props) =>
+          localLLMStreamFetch({ ...props, config: loadLocalLLMConfig() })
+        }
+        renderChatHeader={() => <LocalAIStatus />}
         persistenceAdapter={TTDIndexedDBAdapter}
       />
     </>
