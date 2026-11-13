@@ -2063,6 +2063,19 @@ export const laserPointerToolIcon = createIcon(
   20,
 );
 
+// "Organizar" (fork ia-local): tabler "hierarchy-2" (MIT)
+export const OrganizeIcon = createIcon(
+  <g stroke="currentColor" fill="none">
+    <path stroke="none" d="M0 0h24v24H0z" />
+    <path d="M10 3h4v4h-4z" />
+    <path d="M3 17h4v4h-4z" />
+    <path d="M17 17h4v4h-4z" />
+    <path d="M7 17l5 -4l5 4" />
+    <path d="M12 7l0 6" />
+  </g>,
+  tablerIconProps,
+);
+
 export const MagicIcon = createIcon(
   <g stroke="currentColor" fill="none">
     <path stroke="none" d="M0 0h24v24H0z" />

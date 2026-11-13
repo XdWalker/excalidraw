@@ -404,6 +404,10 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               />
             )}
             <Shortcut
+              label={t("labels.organize")}
+              shortcuts={[getShortcutKey("Shift+Alt+O")]}
+            />
+            <Shortcut
               label={t("labels.copyStyles")}
               shortcuts={[getShortcutKey("CtrlOrCmd+Alt+C")]}
             />

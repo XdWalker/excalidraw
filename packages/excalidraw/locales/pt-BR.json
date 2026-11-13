@@ -128,6 +128,9 @@
     "centerHorizontally": "Centralizar horizontalmente",
     "distributeHorizontally": "Distribuir horizontalmente",
     "distributeVertically": "Distribuir verticalmente",
+    "organize": "Organizar diagrama",
+    "organizeTopToBottom": "Organizar diagrama de cima para baixo",
+    "organizeLeftToRight": "Organizar diagrama da esquerda para a direita",
     "flipHorizontal": "Inverter horizontalmente",
     "flipVertical": "Inverter verticalmente",
     "viewMode": "Modo de visualização",
@@ -560,6 +563,7 @@
     "width": "Largura"
   },
   "toast": {
+    "organizeFailed": "Não foi possível organizar o diagrama. Tente de novo.",
     "addedToLibrary": "Adicionado à biblioteca",
     "copyStyles": "Estilos copiados.",
     "copyToClipboard": "Copiado para área de transferência.",

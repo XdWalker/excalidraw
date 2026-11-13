@@ -134,6 +134,9 @@
     "centerHorizontally": "Center horizontally",
     "distributeHorizontally": "Distribute horizontally",
     "distributeVertically": "Distribute vertically",
+    "organize": "Organize diagram",
+    "organizeTopToBottom": "Organize diagram top to bottom",
+    "organizeLeftToRight": "Organize diagram left to right",
     "flipHorizontal": "Flip horizontal",
     "flipVertical": "Flip vertical",
     "viewMode": "View mode",
@@ -579,6 +582,7 @@
     "width": "Width"
   },
   "toast": {
+    "organizeFailed": "Couldn't organize the diagram. Try again.",
     "addedToLibrary": "Added to library",
     "copyStyles": "Copied styles.",
     "copyToClipboard": "Copied to clipboard.",

@@ -145,3 +145,73 @@ Decisões por pedido (`{...}` na resposta crua, 3 gerações):
 ### Incidente durante o desenvolvimento (sem impacto no código)
 
 O servidor do Vite chegou a guardar em cache uma versão vazia de `localLLM.ts`, lida no meio de uma regravação do formatador. Um `touch` no arquivo resolveu. Se o diálogo parar de responder logo depois de editar arquivos, recarregue a página ou reinicie o `yarn start`.
+
+## Fase 2 — "Organizar": layout automático do diagrama (13/11/2026)
+
+Seleciona-se um diagrama bagunçado e ele se rearruma sozinho, com as setas presas às caixas. Não usa IA: usa o algoritmo de layout em camadas do **ELK** (Eclipse Layout Kernel, via [elkjs](https://github.com/kieler/elkjs) 0.12.1, licença EPL-2.0, sem modificação, carregado só no primeiro uso). Responde à issue [excalidraw/excalidraw#11039](https://github.com/excalidraw/excalidraw/issues/11039).
+
+### Como usar
+
+- **Menu de contexto** (botão direito na seleção): "Organizar diagrama".
+- **Painel de propriedades**: o botão com ícone de hierarquia, logo abaixo dos botões de alinhar e distribuir.
+- **Atalho**: Shift+Alt+O (aparece também na ajuda de atalhos).
+- **Paleta de comandos** (Ctrl+/): "Organizar diagrama", "Organizar diagrama de cima para baixo" e "Organizar diagrama da esquerda para a direita".
+
+Sem direção fixa, ele mantém a orientação do diagrama quando ela é clara (setas 1,5 vez mais horizontais do que verticais viram layout horizontal). Caso contrário, organiza de cima para baixo, como num fluxograma.
+
+### Como funciona
+
+- [`packages/element/src/organize.ts`](../packages/element/src/organize.ts), sem dependências:
+  - **Monta o grafo:** cada caixa ou grupo selecionado é um nó (com o texto de dentro). Cada seta ligada a dois nós é uma aresta, mesmo que a seta não esteja selecionada.
+  - **Aplica as posições** ancorando o resultado onde o diagrama estava.
+  - **Setas retas:** seguem as rotas do ELK, em ângulo reto e contornando as outras caixas, com as pontas presas onde a rota encontra a caixa.
+  - **Setas em cotovelo** (as do Mermaid e da IA): recebem os lados de saída e chegada escolhidos pelo ELK, e o roteador do próprio Excalidraw refaz o caminho.
+- [`packages/excalidraw/organize/elkLayout.ts`](../packages/excalidraw/organize/elkLayout.ts) — opções do ELK:
+  - camadas;
+  - laços quebrados por busca em profundidade, para que só as setas de retorno subam;
+  - rótulos "Sim/Não" sobre a própria seta;
+  - setas saindo de um ponto único de cada lado, como num fluxograma desenhado à mão.
+- [`packages/excalidraw/actions/actionOrganize.tsx`](../packages/excalidraw/actions/actionOrganize.tsx) — a ação (três variantes):
+  - um único passo de desfazer;
+  - aviso se o ELK não carregar.
+
+### Antes e depois
+
+Fluxograma de login espalhado de propósito (7 caixas, 2 decisões, 1 laço). O script [`demo/organizeDemo.js`](demo/organizeDemo.js) monta esse diagrama no app em modo de desenvolvimento.
+
+![Antes: fluxograma de login bagunçado](prints/fase2-antes.png)
+
+![Depois: de cima para baixo](prints/fase2-depois-vertical.png)
+
+![Depois: da esquerda para a direita](prints/fase2-depois-horizontal.png)
+
+Fluxograma gerado pelo Mermaid (setas em cotovelo), com as caixas embaralhadas e depois organizadas:
+
+![Mermaid embaralhado](prints/fase2-mermaid-antes.png)
+
+![Mermaid organizado](prints/fase2-mermaid-depois.png)
+
+### Verificação
+
+- **13 testes novos** ([`packages/excalidraw/tests/organize.test.tsx`](../packages/excalidraw/tests/organize.test.tsx)):
+  - grafo da seleção: setas não selecionadas, setas para fora da seleção, seta com rótulo, grupos;
+  - escolha da direção;
+  - layout sem sobreposição;
+  - setas presas e encostadas nas caixas;
+  - texto dentro da caixa;
+  - nenhuma seta atravessa outra caixa;
+  - só o laço sobe;
+  - ciclos e partes desconectadas;
+  - a ação no editor, com desfazer e refazer.
+- **No app**, sobre o fluxograma de login:
+  - nenhuma sobreposição;
+  - as 8 setas presas (a até 6 px da caixa, que é a folga normal da ligação);
+  - desfazer volta exatamente às posições anteriores e refazer reaplica.
+- **Defeito encontrado pelos testes e corrigido:** uma seta com rótulo selecionada era tratada como caixa.
+- **Falta você validar no Firefox.**
+
+### Limitações conhecidas
+
+- Quando um laço volta para uma decisão (ex.: "Solicitar reposição → Produto em estoque?"), a seta de retorno chega pela mesma ponta de onde saem as outras e fica pouco visível.
+- Setas curvas desenhadas à mão viram rotas em ângulo reto ao organizar.
+- Quadros (frames) na seleção desativam a ação, como já acontece com alinhar e distribuir.

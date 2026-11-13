@@ -383,6 +383,63 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       "separator",
       {
         "PanelComponent": [Function],
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M10 3h4v4h-4z"
+            />
+            <path
+              d="M3 17h4v4h-4z"
+            />
+            <path
+              d="M17 17h4v4h-4z"
+            />
+            <path
+              d="M7 17l5 -4l5 4"
+            />
+            <path
+              d="M12 7l0 6"
+            />
+          </g>
+        </svg>,
+        "keyTest": [Function],
+        "keywords": [
+          "layout",
+          "tidy",
+          "arrange",
+          "auto",
+          "organizar",
+          "arrumar",
+        ],
+        "label": "labels.organize",
+        "name": "organizeElements",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      "separator",
+      {
+        "PanelComponent": [Function],
         "icon": [Function],
         "keyTest": [Function],
         "label": "labels.group",
@@ -5242,6 +5299,63 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       "separator",
       {
         "PanelComponent": [Function],
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M10 3h4v4h-4z"
+            />
+            <path
+              d="M3 17h4v4h-4z"
+            />
+            <path
+              d="M17 17h4v4h-4z"
+            />
+            <path
+              d="M7 17l5 -4l5 4"
+            />
+            <path
+              d="M12 7l0 6"
+            />
+          </g>
+        </svg>,
+        "keyTest": [Function],
+        "keywords": [
+          "layout",
+          "tidy",
+          "arrange",
+          "auto",
+          "organizar",
+          "arrumar",
+        ],
+        "label": "labels.organize",
+        "name": "organizeElements",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      "separator",
+      {
+        "PanelComponent": [Function],
         "icon": [Function],
         "keyTest": [Function],
         "label": "labels.group",
@@ -6470,6 +6584,63 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
         "label": "labels.pasteStyles",
         "name": "pasteStyles",
         "perform": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      "separator",
+      {
+        "PanelComponent": [Function],
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M10 3h4v4h-4z"
+            />
+            <path
+              d="M3 17h4v4h-4z"
+            />
+            <path
+              d="M17 17h4v4h-4z"
+            />
+            <path
+              d="M7 17l5 -4l5 4"
+            />
+            <path
+              d="M12 7l0 6"
+            />
+          </g>
+        </svg>,
+        "keyTest": [Function],
+        "keywords": [
+          "layout",
+          "tidy",
+          "arrange",
+          "auto",
+          "organizar",
+          "arrumar",
+        ],
+        "label": "labels.organize",
+        "name": "organizeElements",
+        "perform": [Function],
+        "predicate": [Function],
         "trackEvent": {
           "category": "element",
         },
@@ -8517,6 +8688,63 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       "separator",
       {
         "PanelComponent": [Function],
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M10 3h4v4h-4z"
+            />
+            <path
+              d="M3 17h4v4h-4z"
+            />
+            <path
+              d="M17 17h4v4h-4z"
+            />
+            <path
+              d="M7 17l5 -4l5 4"
+            />
+            <path
+              d="M12 7l0 6"
+            />
+          </g>
+        </svg>,
+        "keyTest": [Function],
+        "keywords": [
+          "layout",
+          "tidy",
+          "arrange",
+          "auto",
+          "organizar",
+          "arrumar",
+        ],
+        "label": "labels.organize",
+        "name": "organizeElements",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      "separator",
+      {
+        "PanelComponent": [Function],
         "icon": [Function],
         "keyTest": [Function],
         "label": "labels.group",
@@ -9515,6 +9743,63 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         "label": "labels.pasteStyles",
         "name": "pasteStyles",
         "perform": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      "separator",
+      {
+        "PanelComponent": [Function],
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M10 3h4v4h-4z"
+            />
+            <path
+              d="M3 17h4v4h-4z"
+            />
+            <path
+              d="M17 17h4v4h-4z"
+            />
+            <path
+              d="M7 17l5 -4l5 4"
+            />
+            <path
+              d="M12 7l0 6"
+            />
+          </g>
+        </svg>,
+        "keyTest": [Function],
+        "keywords": [
+          "layout",
+          "tidy",
+          "arrange",
+          "auto",
+          "organizar",
+          "arrumar",
+        ],
+        "label": "labels.organize",
+        "name": "organizeElements",
+        "perform": [Function],
+        "predicate": [Function],
         "trackEvent": {
           "category": "element",
         },

@@ -127,6 +127,9 @@ const AlignFieldset = ({
           {renderAction("alignBottom")}
           {showDistribute && renderAction("distributeVertically")}
         </div>
+        <div className="align-buttons__row">
+          {renderAction("organizeElements")}
+        </div>
       </div>
     </fieldset>
   );

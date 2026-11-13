@@ -84,6 +84,7 @@ export * from "./linearElementEditor";
 export * from "./listMarker";
 export * from "./mutateElement";
 export * from "./newElement";
+export * from "./organize";
 export * from "./positionElementsOnGrid";
 export * from "./renderElement";
 export * from "./renderEnvironment";
