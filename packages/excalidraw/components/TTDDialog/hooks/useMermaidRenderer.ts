@@ -36,6 +36,8 @@ export const useMermaidRenderer = ({
 
   const [showPreview, setShowPreview] = useAtom(showPreviewAtom);
   const isRenderingRef = useRef(false);
+  // latest definition requested while a render was in progress
+  const queuedDefinitionRef = useRef<string | null>(null);
 
   const lastAssistantMessage = useMemo(
     () => getLastAssistantMessage(chatHistory),
@@ -74,33 +76,50 @@ export const useMermaidRenderer = ({
       }
 
       if (isRenderingRef.current) {
+        // don't drop it: with a fast (e.g. local) LLM the whole response can
+        // arrive while the first partial render is still in flight, and the
+        // final definition would never be rendered (nor inserted)
+        queuedDefinitionRef.current = mermaidDefinition;
         return false;
       }
 
       isRenderingRef.current = true;
 
-      const renderStartTime = performance.now();
+      let definition: string | null = mermaidDefinition;
+      let success = false;
 
-      const result = await convertMermaidToExcalidraw({
-        canvasRef,
-        data,
-        mermaidToExcalidrawLib,
-        setError,
-        mermaidDefinition,
-        theme,
-        renderEnvironment: app.renderEnvironment,
-      });
+      try {
+        while (definition !== null) {
+          queuedDefinitionRef.current = null;
 
-      const renderDuration = performance.now() - renderStartTime;
+          const renderStartTime = performance.now();
 
-      if (renderDuration < RENDER_SPEED_THRESHOLD) {
-        currentThrottleDelayRef.current = FAST_THROTTLE_DELAY;
-      } else {
-        currentThrottleDelayRef.current = SLOW_THROTTLE_DELAY;
+          const result = await convertMermaidToExcalidraw({
+            canvasRef,
+            data,
+            mermaidToExcalidrawLib,
+            setError,
+            mermaidDefinition: definition,
+            theme,
+            renderEnvironment: app.renderEnvironment,
+          });
+
+          const renderDuration = performance.now() - renderStartTime;
+
+          if (renderDuration < RENDER_SPEED_THRESHOLD) {
+            currentThrottleDelayRef.current = FAST_THROTTLE_DELAY;
+          } else {
+            currentThrottleDelayRef.current = SLOW_THROTTLE_DELAY;
+          }
+
+          success = result.success;
+          definition = queuedDefinitionRef.current;
+        }
+      } finally {
+        isRenderingRef.current = false;
       }
 
-      isRenderingRef.current = false;
-      return result.success;
+      return success;
     },
     [app, canvasRef, mermaidToExcalidrawLib, setError, theme],
   );
