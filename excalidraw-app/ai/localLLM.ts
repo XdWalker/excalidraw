@@ -8,11 +8,16 @@
 import { parseSSEStream } from "@excalidraw/excalidraw";
 import { RequestError } from "@excalidraw/excalidraw/errors";
 import { t } from "@excalidraw/excalidraw/i18n";
+import {
+  parseWireframe,
+  WIREFRAME_JSON_SCHEMA,
+} from "@excalidraw/excalidraw/wireframe/wireframe";
 
 import type {
   LLMMessage,
   TTTDDialog,
 } from "@excalidraw/excalidraw/components/TTDDialog/types";
+import type { Wireframe } from "@excalidraw/excalidraw/wireframe/wireframe";
 
 // -----------------------------------------------------------------------------
 // configuração
@@ -420,6 +425,130 @@ export const localLLMStreamFetch = async ({
       return { error };
     }
     // fetch() rejeita com TypeError quando não há servidor na porta
+    return {
+      error: new RequestError({
+        message: t("localAI.errors.unreachable", { url: baseURL }),
+        status: 503,
+      }),
+    };
+  }
+};
+
+// -----------------------------------------------------------------------------
+// wireframe (fase 3)
+// -----------------------------------------------------------------------------
+
+export const WIREFRAME_SYSTEM_PROMPT = `You describe the STRUCTURE of one screen of a user interface (a low-fidelity wireframe) as a tree of blocks. Never give positions, sizes or colors: the app computes the layout.
+
+Block kinds:
+- header: top bar (logo as text, nav, buttons). nav: menu links. footer: bottom bar with links/text.
+- hero: big highlight area with a heading, text, buttons and maybe a search form.
+- section: an area with a title (label). row: children side by side. column: children stacked.
+- grid: repeated items (cards) with "columns" (2 to 4). card: one item (image, heading/text, button).
+- sidebar: side menu or filters. form: inputs and a submit button. list: stacked items.
+- leaves: heading, text, button, input (label = placeholder), image (label = what it shows; in a header it is the logo), link, table (label = its columns, comma-separated, e.g. "ID, Cliente, Valor, Status"), chart (label = what it shows), options (a group of choices such as sizes, colors or filters; label = the choices, comma-separated, e.g. "37, 38, 39, 40").
+
+Rules:
+- The root is the page. A typical page: header, then the main content (hero, sections, grids, forms), then footer.
+- Keep the tree shallow: at most 4 levels below the page. Don't wrap blocks in extra rows, columns or sections; for a set of choices use one "options" block instead of a row of buttons.
+- A sidebar goes directly in the page, next to the other blocks: the app puts it beside the content by itself (no row/column around it).
+- Include every part the request mentions (e.g. sizes as a row of buttons, reviews as cards), each with real content, never an empty section.
+- Use realistic content in the same language as the request: product names, prices, field names, button texts. Keep each label short.
+- Repeat cards in grids (3 to 8) instead of describing them as text.
+- When asked to change the current screen, return the whole updated screen.`;
+
+export type LocalLLMWireframeOptions = {
+  config: LocalLLMConfig;
+  prompt: string;
+  /** the current wireframe, when the user asks to change it */
+  previous?: Wireframe | null;
+  signal?: AbortSignal;
+};
+
+export const localLLMWireframeFetch = async ({
+  config,
+  prompt,
+  previous,
+  signal,
+}: LocalLLMWireframeOptions): Promise<
+  { wireframe: Wireframe; error: null } | { error: RequestError }
+> => {
+  const baseURL = normalizeBaseURL(config.baseURL);
+
+  try {
+    const model = await resolveModel(config, signal);
+    const userContent = previous
+      ? `Current screen (JSON):\n${JSON.stringify(
+          previous,
+        )}\n\nChange it: ${prompt}`
+      : prompt;
+
+    const response = await fetch(`${baseURL}/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: WIREFRAME_SYSTEM_PROMPT },
+          { role: "user", content: userContent },
+        ],
+        stream: false,
+        temperature: 0.4,
+        max_tokens: 6000,
+        // the server constrains the output to this schema (grammar)
+        response_format: {
+          type: "json_schema",
+          json_schema: WIREFRAME_JSON_SCHEMA,
+        },
+        chat_template_kwargs: { enable_thinking: false }, // llama.cpp
+        reasoning_effort: "none", // Ollama
+      }),
+      signal,
+    });
+
+    if (!response.ok) {
+      const message = await readErrorMessage(response);
+      return {
+        error: new RequestError({
+          message: t("localAI.errors.serverError", {
+            status: response.status,
+            message: String(message || "").slice(0, 300),
+          }),
+          status: response.status === 429 ? 503 : response.status,
+        }),
+      };
+    }
+
+    const json = await response.json();
+    const content = json?.choices?.[0]?.message?.content;
+    if (typeof content !== "string" || !content.trim()) {
+      return {
+        error: new RequestError({
+          message: t("localAI.errors.generationFailed"),
+          status: 500,
+        }),
+      };
+    }
+
+    try {
+      return { wireframe: parseWireframe(content), error: null };
+    } catch (error: any) {
+      return {
+        error: new RequestError({
+          message: t("localAI.errors.invalidWireframe", {
+            reason: error?.message ?? "",
+          }),
+          status: 500,
+        }),
+      };
+    }
+  } catch (error: any) {
+    if (isAbortError(error, signal)) {
+      return { error: new RequestError({ message: "Aborted", status: 499 }) };
+    }
+    if (error instanceof RequestError) {
+      return { error };
+    }
     return {
       error: new RequestError({
         message: t("localAI.errors.unreachable", { url: baseURL }),

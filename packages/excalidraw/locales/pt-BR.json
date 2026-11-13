@@ -775,7 +775,19 @@
       "unreachable": "Não foi possível conectar à IA local em {{url}}. Verifique se o servidor está rodando e se aceita pedidos desta página (CORS).",
       "serverError": "A IA local respondeu com erro ({{status}}): {{message}}",
       "noModels": "O servidor da IA local não tem nenhum modelo disponível.",
-      "generationFailed": "A IA local devolveu uma resposta vazia."
+      "generationFailed": "A IA local devolveu uma resposta vazia.",
+      "invalidWireframe": "A IA local devolveu um wireframe que não pôde ser lido ({{reason}})."
     }
+  },
+  "wireframe": {
+    "label": "Wireframe",
+    "description": "Descreva uma tela com suas palavras e receba um wireframe editável. A IA local descreve só a estrutura; as posições são calculadas pelo Excalidraw.",
+    "placeholder": "Ex.: Página inicial de uma loja de carros usados, com busca e carros em destaque",
+    "refinePlaceholder": "Descreva uma mudança, ex.: adicione uma barra lateral com filtros",
+    "generate": "Gerar wireframe",
+    "refine": "Aplicar mudança",
+    "new": "Começar de novo",
+    "generatedIn": "Gerado em {{seconds}} s pela IA local",
+    "empty": "O wireframe aparece aqui"
   }
 }

@@ -808,7 +808,19 @@
       "unreachable": "Couldn't reach the local AI at {{url}}. Check that the server is running and allows requests from this page (CORS).",
       "serverError": "The local AI returned an error ({{status}}): {{message}}",
       "noModels": "The local AI server has no models available.",
-      "generationFailed": "The local AI returned an empty response."
+      "generationFailed": "The local AI returned an empty response.",
+      "invalidWireframe": "The local AI returned a wireframe that couldn't be read ({{reason}})."
     }
+  },
+  "wireframe": {
+    "label": "Wireframe",
+    "description": "Describe a screen in plain words and get an editable low-fidelity wireframe. The local AI only describes the structure; the layout is computed by Excalidraw.",
+    "placeholder": "E.g. Home page of a used car store, with search and featured cars",
+    "refinePlaceholder": "Describe a change, e.g. add a sidebar with filters",
+    "generate": "Generate wireframe",
+    "refine": "Apply change",
+    "new": "Start over",
+    "generatedIn": "Generated in {{seconds}} s by the local AI",
+    "empty": "The wireframe will show up here"
   }
 }

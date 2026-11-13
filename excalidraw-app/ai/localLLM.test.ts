@@ -1,15 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  parseWireframe,
+  WIREFRAME_JSON_SCHEMA,
+} from "@excalidraw/excalidraw/wireframe/wireframe";
+
+import {
   createMermaidStreamSanitizer,
   fixFlowchartShapes,
   loadLocalLLMConfig,
   LOCAL_LLM_STORAGE_KEY,
   localLLMStreamFetch,
+  localLLMWireframeFetch,
   MERMAID_SYSTEM_PROMPT,
   normalizeBaseURL,
   sanitizeMermaidResponse,
   saveLocalLLMConfig,
+  WIREFRAME_SYSTEM_PROMPT,
 } from "./localLLM";
 
 const encoder = new TextEncoder();
@@ -324,5 +331,100 @@ describe("localLLMStreamFetch", () => {
     });
 
     expect(result.error?.status).toBe(499);
+  });
+});
+
+describe("localLLMWireframeFetch", () => {
+  let originalFetch: typeof global.fetch;
+
+  beforeEach(() => {
+    originalFetch = global.fetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  const reply = (content: string) =>
+    new Response(
+      JSON.stringify({
+        choices: [{ message: { role: "assistant", content } }],
+      }),
+      { status: 200 },
+    );
+
+  const sample = {
+    title: "Login",
+    root: {
+      kind: "page",
+      children: [
+        { kind: "form", children: [{ kind: "button", label: "Entrar" }] },
+      ],
+    },
+  };
+
+  it("asks for JSON constrained by the wireframe schema, without thinking", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(JSON.stringify(sample)));
+    global.fetch = fetchMock;
+
+    const result = await localLLMWireframeFetch({
+      config,
+      prompt: "tela de login",
+    });
+
+    expect(result.error).toBeNull();
+    expect("wireframe" in result && result.wireframe.title).toBe("Login");
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.stream).toBe(false);
+    expect(body.response_format).toEqual({
+      type: "json_schema",
+      json_schema: WIREFRAME_JSON_SCHEMA,
+    });
+    expect(body.chat_template_kwargs).toEqual({ enable_thinking: false });
+    expect(body.messages[0]).toEqual({
+      role: "system",
+      content: WIREFRAME_SYSTEM_PROMPT,
+    });
+    expect(body.messages[1]).toEqual({
+      role: "user",
+      content: "tela de login",
+    });
+  });
+
+  it("sends the current wireframe when asked for a change", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(reply(JSON.stringify(sample)));
+    global.fetch = fetchMock;
+    const previous = parseWireframe(sample);
+
+    await localLLMWireframeFetch({
+      config,
+      prompt: "adicione um rodapé",
+      previous,
+    });
+
+    const userMessage = JSON.parse(fetchMock.mock.calls[0][1].body).messages[1]
+      .content as string;
+    expect(userMessage).toContain(JSON.stringify(previous));
+    expect(userMessage).toContain("adicione um rodapé");
+  });
+
+  it("reports an answer that isn't a wireframe", async () => {
+    global.fetch = vi.fn().mockResolvedValue(reply("desculpe, não sei"));
+
+    const result = await localLLMWireframeFetch({ config, prompt: "x tela" });
+
+    expect(result.error?.status).toBe(500);
+    expect(result.error?.message).toMatch(/wireframe/i);
+  });
+
+  it("returns a friendly error when the server is not running", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+
+    const result = await localLLMWireframeFetch({ config, prompt: "x tela" });
+
+    expect(result.error?.status).toBe(503);
+    expect(result.error?.message).toContain("127.0.0.1:9931");
   });
 });

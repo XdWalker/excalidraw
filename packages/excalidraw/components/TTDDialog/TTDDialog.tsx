@@ -11,6 +11,7 @@ import { withInternalFallback } from "../hoc/withInternalFallback";
 
 import MermaidToExcalidraw from "./MermaidToExcalidraw";
 import TextToDiagram from "./TextToDiagram";
+import { WireframeToExcalidraw } from "./WireframeToExcalidraw";
 import TTDDialogTabs from "./TTDDialogTabs";
 import { TTDDialogTabTriggers } from "./TTDDialogTabTriggers";
 import { TTDDialogTabTrigger } from "./TTDDialogTabTrigger";
@@ -33,6 +34,7 @@ export const TTDDialog = (
         onTextSubmit: TTTDDialog.onTextSubmit;
         renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
         renderWarning?: TTTDDialog.renderWarning;
+        onWireframeSubmit?: TTTDDialog.onWireframeSubmit;
         renderChatHeader?: TTTDDialog.renderChatHeader;
         persistenceAdapter: TTDPersistenceAdapter;
       }
@@ -87,7 +89,7 @@ const TTDDialogBase = withInternalFallback(
     tab,
     ...rest
   }: {
-    tab: "text-to-diagram" | "mermaid";
+    tab: "text-to-diagram" | "mermaid" | "wireframe";
   } & (
     | {
         onTextSubmit(
@@ -95,6 +97,7 @@ const TTDDialogBase = withInternalFallback(
         ): Promise<TTTDDialog.OnTextSubmitRetValue>;
         renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
         renderWarning?: TTTDDialog.renderWarning;
+        onWireframeSubmit?: TTTDDialog.onWireframeSubmit;
         renderChatHeader?: TTTDDialog.renderChatHeader;
         persistenceAdapter: TTDPersistenceAdapter;
       }
@@ -199,6 +202,11 @@ const TTDDialogBase = withInternalFallback(
               <TTDDialogTabTrigger tab="mermaid">
                 {t("mermaid.label")}
               </TTDDialogTabTrigger>
+              {!("__fallback" in rest) && rest.onWireframeSubmit && (
+                <TTDDialogTabTrigger tab="wireframe">
+                  {t("wireframe.label")}
+                </TTDDialogTabTrigger>
+              )}
             </TTDDialogTabTriggers>
           )}
 
@@ -222,6 +230,13 @@ const TTDDialogBase = withInternalFallback(
               isActive={tab === "mermaid"}
             />
           </TTDDialogTab>
+          {!("__fallback" in rest) && rest.onWireframeSubmit && (
+            <TTDDialogTab className="ttd-dialog-content" tab="wireframe">
+              <WireframeToExcalidraw
+                onWireframeSubmit={rest.onWireframeSubmit}
+              />
+            </TTDDialogTab>
+          )}
         </TTDDialogTabs>
       </Dialog>
     );

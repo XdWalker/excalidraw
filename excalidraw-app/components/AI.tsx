@@ -14,7 +14,11 @@ import { safelyParseJSON } from "@excalidraw/common";
 import type { StreamChunk } from "@excalidraw/excalidraw";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
-import { loadLocalLLMConfig, localLLMStreamFetch } from "../ai/localLLM";
+import {
+  loadLocalLLMConfig,
+  localLLMStreamFetch,
+  localLLMWireframeFetch,
+} from "../ai/localLLM";
 import { cacheMermaidChunks } from "../data/cacheMermaidChunks";
 import { TTDIndexedDBAdapter } from "../data/TTDStorage";
 
@@ -171,6 +175,15 @@ export const AIComponents = ({
           localLLMStreamFetch({ ...props, config: loadLocalLLMConfig() })
         }
         renderChatHeader={() => <LocalAIStatus />}
+        // fase 3: texto -> wireframe de interface, com a mesma IA local
+        onWireframeSubmit={({ prompt, previous, signal }) =>
+          localLLMWireframeFetch({
+            config: loadLocalLLMConfig(),
+            prompt,
+            previous,
+            signal,
+          })
+        }
         persistenceAdapter={TTDIndexedDBAdapter}
       />
     </>

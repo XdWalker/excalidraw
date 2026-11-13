@@ -7,6 +7,7 @@ import type { MermaidConfig } from "@excalidraw/mermaid-to-excalidraw";
 import type { MermaidToExcalidrawResult } from "@excalidraw/mermaid-to-excalidraw/dist/interfaces";
 
 import type { BinaryFiles } from "../../types";
+import type { Wireframe } from "../../wireframe/wireframe";
 
 export type LLMMessage = {
   role: "user" | "assistant";
@@ -129,6 +130,22 @@ export namespace TTTDDialog {
   export type renderWarning = (
     chatMessage: TChat.ChatMessage,
   ) => React.ReactNode | undefined;
+
+  export type OnWireframeSubmitProps = {
+    prompt: string;
+    /** the wireframe shown in the preview, when the user asks to change it */
+    previous: Wireframe | null;
+    signal: AbortSignal;
+  };
+
+  export type OnWireframeSubmitRetValue =
+    | { wireframe: Wireframe; error: null }
+    | { error: Error; wireframe?: undefined };
+
+  /** text -> UI wireframe (fork ia-local, fase 3) */
+  export type onWireframeSubmit = (
+    props: OnWireframeSubmitProps,
+  ) => Promise<OnWireframeSubmitRetValue>;
 
   /**
    * extra content rendered in the chat panel header (e.g. which AI

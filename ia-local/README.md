@@ -272,3 +272,83 @@ Esses números ficam travados em [`organizeQuality.test.tsx`](../packages/excali
 
 - Um rótulo pode encostar de leve numa linha que passa perto, como o "Sim" do Mermaid ao lado do laço. Não houve sobreposição nas métricas, mas não é impossível.
 - Várias setas chegando à mesma elipse ou ao mesmo losango se juntam na ponta de cima.
+
+## Fase 3 — Texto vira wireframe de interface (13/11/2026)
+
+Uma terceira aba no diálogo, **"Wireframe"**: você descreve uma tela ("página de produto de uma loja de tênis") e recebe um wireframe editável dentro de um quadro (frame) do Excalidraw.
+
+### Como funciona
+
+- **A IA descreve só a estrutura.** O Qwen devolve uma árvore de blocos de um **conjunto fixo**, sem posições, tamanhos nem cores. O servidor força o formato com `response_format: json_schema`, então a resposta sempre é JSON válido.
+  - **Contêineres:** página, cabeçalho, menu, destaque (hero), seção, linha, coluna, grade, card, barra lateral, rodapé, formulário, lista.
+  - **Folhas:** título, texto, botão, campo, imagem, link, tabela, gráfico, opções.
+- **O nosso código calcula o layout** ([`packages/excalidraw/wireframe/layout.ts`](../packages/excalidraw/wireframe/layout.ts)). A largura vem de cima para baixo e a altura de baixo para cima, com uma regra por tipo de bloco:
+  - cabeçalho e rodapé em faixa, com os itens espalhados;
+  - grade com N colunas;
+  - barra lateral ao lado do conteúdo, da altura dele;
+  - formulário estreito e centralizado;
+  - imagem com o "X" de espaço reservado (no cabeçalho, logo pequeno);
+  - tabela com as colunas do rótulo ("ID, Cliente, Valor");
+  - gráfico de linha;
+  - opções (tamanhos, cores) como botões pequenos, com o primeiro selecionado.
+- **Validação** ([`packages/excalidraw/wireframe/wireframe.ts`](../packages/excalidraw/wireframe/wireframe.ts)):
+  - tipos desconhecidos viram seção ou texto;
+  - a raiz vira página;
+  - há limites de profundidade, filhos e tamanho de texto, para uma resposta descontrolada não gerar um desenho gigante.
+- **Ajustes:** depois do primeiro resultado, o mesmo campo vira "Aplicar mudança" ("adicione uma barra lateral com filtros"). O wireframe atual vai junto no pedido e volta inteiro, modificado.
+- **No app** ([`excalidraw-app/ai/localLLM.ts`](../excalidraw-app/ai/localLLM.ts)): `localLLMWireframeFetch`, com prompt próprio e raciocínio desligado. A aba só aparece quando o app fornece `onWireframeSubmit`.
+
+### Exemplos (Qwen3.8 27B local, RTX 3090, uma execução cada)
+
+| Pedido | Tempo | Blocos |
+| --- | --- | --- |
+| Página inicial de um site de venda de carros usados | 26,2 s | 87 |
+| Tela de login de um aplicativo de banco | 6,6 s | 20 |
+| Painel administrativo de uma loja online com menu lateral, indicadores e tabela de pedidos | 11,0 s | 42 |
+| Página de produto de um e-commerce de tênis, com fotos, tamanhos, preço e avaliações | 12,2 s | 42 |
+
+O tempo acompanha o tamanho da página: são cerca de 85 tokens/s, e cada bloco ocupa algumas dezenas de tokens.
+
+![Loja de carros](prints/fase3-carros.png)
+
+![Login de banco](prints/fase3-banco.png)
+
+![Painel administrativo](prints/fase3-admin.png)
+
+![Página de produto](prints/fase3-tenis.png)
+
+### Um problema encontrado e contornado: blocos vazios no 5º nível
+
+Com a saída forçada por esquema, o Qwen **nunca passou do 4º nível** de aninhamento abaixo da página. Os contêineres nesse nível vinham vazios: por exemplo, a "linha" que devia ter os botões de tamanho.
+
+- **Testes no servidor:** esquema desenrolado, esquema recursivo (`$ref`) e sem `maxItems`. O resultado foi o mesmo em todos (16 de 16 execuções paravam no nível 4).
+- **Sem esquema:** o modelo desce mais, mas fica 3 vezes mais lento e perde a garantia de JSON válido.
+- **Contorno:** fazer 4 níveis bastarem.
+  - Bloco novo `options`: as escolhas vão no próprio rótulo ("37, 38, 39, 40") em vez de uma linha com botões dentro.
+  - Prompt: manter a árvore rasa e pôr a barra lateral direto na página; o layout a coloca ao lado do conteúdo sozinho.
+  - Blocos que ainda vierem vazios não são desenhados.
+
+| Medição | Contêineres vazios |
+| --- | --- |
+| Esquema original (8 execuções: tênis e painel) | 31 |
+| Com `options` e árvore rasa (mesmas 8 execuções) | 11 |
+| Só o painel, antes da regra da barra lateral (4 execuções) | 7 |
+| Só o painel, depois da regra da barra lateral (4 execuções) | **1** |
+
+### Verificação
+
+- **19 testes do wireframe** ([`packages/excalidraw/tests/wireframe.test.tsx`](../packages/excalidraw/tests/wireframe.test.tsx)), cobrindo:
+  - a validação com os JSONs reais da fase 0;
+  - os limites;
+  - o layout dentro do quadro, sem botões, campos ou imagens sobrepostos;
+  - grade, barra lateral, tabela, opções, logo e blocos vazios;
+  - a aba no editor: gerar, ajustar, inserir e mostrar erro.
+- **4 testes novos do cliente:** esquema e sem raciocínio no pedido, envio do wireframe atual nos ajustes, resposta inválida e servidor fora do ar.
+- **Defeito do Excalidraw contornado:** um quadro em `x: 0` é tratado como "sem posição" (`frame.x || minX` em `transform.ts`) e encolhe em volta dos filhos. Por isso a página começa em (100, 100).
+- **Falta você validar no Firefox.**
+
+### Limitações
+
+- A qualidade depende do modelo. A mesma frase pode render páginas mais ricas ou mais pobres de uma vez para outra (temperatura 0,4).
+- Ainda pode sobrar algum bloco vazio. Ele não é desenhado, mas o título dele fica.
+- Páginas grandes (80 a 100 blocos) levam de 25 a 30 s no PC de referência. Em máquinas modestas isso vai ser bem mais lento (fase 7).
