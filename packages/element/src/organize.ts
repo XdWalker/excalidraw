@@ -51,6 +51,11 @@ export type OrganizeNode = {
   y: number;
   width: number;
   height: number;
+  /**
+   * shapes whose bounding box corners are empty: arrows should leave and
+   * arrive at the tips (diamond) or the middle of the sides (ellipse)
+   */
+  tipped: boolean;
 };
 
 export type OrganizeEdge = {
@@ -96,9 +101,8 @@ export const isOrganizeNodeBucket = (
  *   arrows themselves are selected or not.
  *
  * Arrows and lines that are not part of a group are not nodes: they are
- * re-routed after the nodes move. Nodes are returned in reading order
- * (top-to-bottom, left-to-right), which the layout uses as a tie-breaker so
- * the result keeps the user's ordering where it can.
+ * re-routed after the nodes move. Nodes and edges are returned in flow
+ * order (see `orderByFlow`), which the layout uses as a tie-breaker.
  */
 export const getOrganizeGraph = (
   selectedElements: readonly NonDeletedExcalidrawElement[],
@@ -135,6 +139,9 @@ export const getOrganizeGraph = (
       y: bbox.minY,
       width: bbox.width,
       height: bbox.height,
+      tipped:
+        bucket.filter((element) => !isBoundToContainer(element)).length === 1 &&
+        (bucket[0].type === "diamond" || bucket[0].type === "ellipse"),
     };
     nodes.push(node);
 
@@ -181,9 +188,60 @@ export const getOrganizeGraph = (
     });
   }
 
-  nodes.sort((a, b) => a.y - b.y || a.x - b.x);
+  return orderByFlow(nodes, edges);
+};
 
-  return { nodes, edges };
+/**
+ * Orders nodes along the flow: depth-first from the start nodes (no incoming
+ * arrow), in reading order (top-to-bottom, left-to-right) only to pick
+ * between several starts. The layout uses this order as a tie-breaker, and
+ * since it doesn't depend on where the shapes currently are, organizing an
+ * already organized diagram leaves it as it is.
+ */
+const orderByFlow = (
+  nodes: OrganizeNode[],
+  edges: OrganizeEdge[],
+): OrganizeGraph => {
+  const readingOrder = [...nodes].sort((a, b) => a.y - b.y || a.x - b.x);
+  const outgoing = new Map<string, OrganizeEdge[]>();
+  const incoming = new Map<string, number>();
+  for (const edge of edges) {
+    outgoing.set(edge.source, [...(outgoing.get(edge.source) ?? []), edge]);
+    incoming.set(edge.target, (incoming.get(edge.target) ?? 0) + 1);
+  }
+
+  const rank = new Map<string, number>();
+  const visit = (id: string) => {
+    const stack = [id];
+    while (stack.length) {
+      const current = stack.pop()!;
+      if (rank.has(current)) {
+        continue;
+      }
+      rank.set(current, rank.size);
+      // reversed so the first outgoing arrow is visited first
+      const next = (outgoing.get(current) ?? []).map((edge) => edge.target);
+      for (let i = next.length - 1; i >= 0; i--) {
+        if (!rank.has(next[i])) {
+          stack.push(next[i]);
+        }
+      }
+    }
+  };
+  readingOrder
+    .filter((node) => !incoming.get(node.id))
+    .forEach((node) => visit(node.id));
+  // whatever is only reachable through a loop
+  readingOrder.forEach((node) => visit(node.id));
+
+  const order = (id: string) => rank.get(id) ?? Infinity;
+  return {
+    nodes: [...nodes].sort((a, b) => order(a.id) - order(b.id)),
+    edges: [...edges].sort(
+      (a, b) =>
+        order(a.source) - order(b.source) || order(a.target) - order(b.target),
+    ),
+  };
 };
 
 /**

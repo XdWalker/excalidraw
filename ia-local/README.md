@@ -215,3 +215,60 @@ Fluxograma gerado pelo Mermaid (setas em cotovelo), com as caixas embaralhadas e
 - Quando um laço volta para uma decisão (ex.: "Solicitar reposição → Produto em estoque?"), a seta de retorno chega pela mesma ponta de onde saem as outras e fica pouco visível.
 - Setas curvas desenhadas à mão viram rotas em ângulo reto ao organizar.
 - Quadros (frames) na seleção desativam a ação, como já acontece com alinhar e distribuir.
+
+## Fase 2b — "Organizar" legível em diagramas grandes (13/11/2026)
+
+No teste da Fase 2 no Firefox, com um diagrama de 19 caixas, apareceram quatro problemas: setas umas sobre as outras, setas de retorno sem dar para ver de onde voltam, nomes sobre as linhas e um segundo "Organizar" que ainda mudava o desenho.
+
+### Como medimos
+
+- **Diagrama de teste:** reproduzimos a mesma estrutura do diagrama testado à mão, com rótulos neutros de logística: 19 caixas, 2 laços de volta a um passo anterior, 2 pares de ida e volta e setas com rótulo. O teste de login também entra na comparação.
+- **Métricas** ([`packages/excalidraw/tests/helpers/organizeQuality.ts`](../packages/excalidraw/tests/helpers/organizeQuality.ts)), cada uma ligada a um problema relatado:
+
+| Métrica | Problema relatado |
+| --- | --- |
+| px de seta correndo sobre outra seta | "setas uma em cima da outra" |
+| setas que chegam no mesmo ponto onde outra chega ou sai | "não dá para ver para onde está indo" / laço escondido |
+| rótulos sobre uma linha ou caixa | "nomes em cima das linhas" |
+| quanto uma caixa se move numa segunda execução | "clicando de novo ele muda mais uma vez" |
+| setas atravessando caixas e caixas sobrepostas | (já zeradas na fase 2; mantidas como garantia) |
+
+### Resultados
+
+|  | Fase 2 (commit `fase-2`) | Fase 2b |
+| --- | --- | --- |
+| **Diagrama grande:** setas sobrepostas | 1517 px | **0** |
+| **Diagrama grande:** setas com ponta compartilhada | 12 | **0** |
+| **Diagrama grande:** rótulos sobre linhas | 1 | **0** |
+| **Diagrama grande:** movimento numa 2ª execução | 923 px | **0** |
+| **Login:** setas sobrepostas | 181 px | 83 px (\*) |
+| **Login:** setas com ponta compartilhada | 4 | 2 (\*) |
+| **Login:** movimento numa 2ª execução | 0 | 0 |
+| Setas atravessando caixas, caixas sobrepostas | 0 | 0 |
+
+(\*) De propósito: o "Sim" e o "Não" saem juntos da ponta do losango e se separam logo abaixo, e as duas setas que chegam à elipse final se juntam na ponta dela.
+
+Esses números ficam travados em [`organizeQuality.test.tsx`](../packages/excalidraw/tests/organizeQuality.test.tsx): se uma mudança futura piorar a legibilidade, o teste falha.
+
+### O que mudou
+
+1. **Cada seta com seu próprio caminho.** A opção que juntava as setas num ponto só por lado (`mergeEdges`), escolhida na Fase 2 para tirar os trechos soltos nos losangos, foi desligada. Ela era a causa das sobreposições nos diagramas grandes. Agora há espaço mínimo entre linhas paralelas e entre linhas e caixas.
+2. **Laços visíveis.** As setas de volta a um passo anterior ganham rota própria (`feedbackEdges`), por fora do fluxo, chegando à caixa por um ponto separado.
+3. **Losangos e elipses pelas pontas.** As setas saem da ponta de baixo (ou da direita, no layout horizontal) e chegam pela ponta de cima, como num fluxograma desenhado à mão (portas fixas do ELK). Isso resolve os trechos soltos sem juntar as setas das caixas retangulares.
+4. **Mesmo resultado ao organizar de novo.** A ordem de desempate do layout deixou de ser a posição na tela e passou a ser o próprio fluxo: busca em profundidade a partir das caixas sem setas chegando. Organizar um diagrama já organizado não muda nada.
+5. **Rótulos:** com as mudanças acima, a métrica de rótulos sobre linhas ficou em zero. Por isso não mexemos no posicionamento dos rótulos, que continua sendo o do Excalidraw: no meio do trajeto da seta.
+
+### Antes e depois (diagrama grande, de cima para baixo)
+
+![Diagrama grande espalhado](prints/fase2b-grande-antes.png)
+
+![Diagrama grande organizado na fase 2b](prints/fase2b-grande-depois.png)
+
+![Login organizado na fase 2b](prints/fase2b-login-depois.png)
+
+![Mermaid organizado na fase 2b: o laço "Solicitar reposição" fica visível](prints/fase2b-mermaid-depois.png)
+
+### Limitações que continuam
+
+- Um rótulo pode encostar de leve numa linha que passa perto, como o "Sim" do Mermaid ao lado do laço. Não houve sobreposição nas métricas, mas não é impossível.
+- Várias setas chegando à mesma elipse ou ao mesmo losango se juntam na ponta de cima.
