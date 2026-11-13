@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   createMermaidStreamSanitizer,
+  fixFlowchartShapes,
   loadLocalLLMConfig,
   LOCAL_LLM_STORAGE_KEY,
   localLLMStreamFetch,
@@ -84,12 +85,71 @@ describe("sanitizeMermaidResponse", () => {
     expect(sanitizeMermaidResponse("<think>ainda pensando", false)).toBe("");
     expect(sanitizeMermaidResponse("```mermaid", false)).toBe("");
     expect(sanitizeMermaidResponse("flowchart TD\nA-->B\n`", false)).toBe(
-      "flowchart TD\nA-->B",
+      "flowchart TD\nA-->B\n",
     );
+  });
+
+  it("emits only complete lines while streaming", () => {
+    expect(sanitizeMermaidResponse('flowchart TD\nA --> B["Pag', false)).toBe(
+      "flowchart TD\n",
+    );
+  });
+
+  it("fixes mismatched shape brackets in flowcharts", () => {
+    expect(
+      sanitizeMermaidResponse(
+        'flowchart TD\n  G -- "Sim" --> H["Cliente satisfeito?"}\n  H -- "Não" --> G',
+      ),
+    ).toBe(
+      'flowchart TD\n  G -- "Sim" --> H{"Cliente satisfeito?"}\n  H -- "Não" --> G',
+    );
+  });
+
+  it("leaves other diagram types alone", () => {
+    const sequence = 'sequenceDiagram\n  A->>B: texto ["x"}';
+    expect(sanitizeMermaidResponse(sequence)).toBe(sequence);
+  });
+});
+
+describe("fixFlowchartShapes", () => {
+  it.each([
+    ['H["Satisfeito?"}', 'H{"Satisfeito?"}'],
+    ['C{"Aprovado?"]', 'C{"Aprovado?"}'],
+    ['A["Passo")', 'A["Passo"]'],
+    ['A("Passo"]', 'A("Passo")'],
+    ['B["Pagamento aprovado?"]', 'B{"Pagamento aprovado?"}'],
+    ['B("Tem estoque? "]', 'B{"Tem estoque? "}'],
+  ])("%s -> %s", (input, output) => {
+    expect(fixFlowchartShapes(input)).toBe(output);
+  });
+
+  it.each([
+    'A["Passo"] --> B{"Decisão?"}',
+    'A(["Início"]) --> B[["Sub"]]',
+    'A -- "Sim" --> B',
+    "A[Sem aspas} --> B",
+  ])("keeps valid or unquoted shapes: %s", (line) => {
+    expect(fixFlowchartShapes(line)).toBe(line);
   });
 });
 
 describe("createMermaidStreamSanitizer", () => {
+  it("fixes a broken decision line before it is shown", () => {
+    const sanitizer = createMermaidStreamSanitizer();
+    const pieces = [
+      "flowchart TD\n",
+      'A --> B["Pago?',
+      '"}\n',
+      'B --> C["Fim"]',
+    ];
+    const emitted = pieces.map((piece) => sanitizer.push(piece)).join("");
+    const { delta, text } = sanitizer.finish();
+    expect(emitted + delta).toBe(
+      'flowchart TD\nA --> B{"Pago?"}\nB --> C["Fim"]',
+    );
+    expect(text).toBe('flowchart TD\nA --> B{"Pago?"}\nB --> C["Fim"]');
+  });
+
   it("emits only clean, append-only deltas", () => {
     const sanitizer = createMermaidStreamSanitizer();
     const pieces = [

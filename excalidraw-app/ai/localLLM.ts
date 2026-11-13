@@ -125,15 +125,66 @@ const resolveModel = async (config: LocalLLMConfig, signal?: AbortSignal) => {
 // prompt
 // -----------------------------------------------------------------------------
 
-export const MERMAID_SYSTEM_PROMPT = `You turn the user's request into ONE Mermaid diagram.
+// Versão da fase 1b. A comparação com a versão anterior (6 pedidos curtos, 2x
+// cada) está em ia-local/README.md: decisões por fluxograma de ~1,9 para ~3,5.
+export const MERMAID_SYSTEM_PROMPT = `You turn the user's request into ONE Mermaid diagram, drawn the way a domain expert would draw it.
 
-Rules:
+Output rules:
 - Reply with Mermaid code ONLY: no markdown fences, no explanations, no comments before or after.
 - Pick the diagram type that fits: flowchart (processes, decisions), sequenceDiagram (messages between participants), classDiagram, stateDiagram-v2, erDiagram, gantt, timeline or quadrantChart. Prefer "flowchart TD" when unsure.
 - Write every label in the same language as the user's request. Keep labels short (max ~6 words).
-- Flowcharts: wrap node and edge labels that contain accents, punctuation or parentheses in double quotes, e.g. A["Validar usuário"] and A -- "Sim" --> B. Use {"..."} for decisions.
-- Sequence diagrams: never put quotes in participant names; use an alias without spaces, e.g. "participant BD as Banco de Dados".
+
+Content rules for processes (flowcharts and state diagrams):
+- Model the process as it really happens, not only the happy path. Even when the request is short, include the decision points it naturally has (validations, approvals, availability checks, success or failure), what happens on each outcome, and loops back to an earlier step when something has to be retried or corrected.
+- Every decision has at least two labelled exits (e.g. "Sim" / "Não"). Every path either reaches an end step or rejoins the flow: no dead ends.
+- Aim for about 8 to 16 nodes. Draw a straight line only when the process truly has no choices.
+- If the user describes the steps in detail, follow their description and do not invent extra steps.
+
+Syntax rules:
+- Flowcharts: wrap node and edge labels in double quotes, e.g. A["Validar usuário"] and A -- "Sim" --> B.
+- Close every shape with the bracket that opened it: steps are A["..."], decisions are C{"..."}. Never write C["...?"}.
+- Sequence diagrams: never put quotes in participant names; use an alias without spaces, e.g. "participant BD as Banco de Dados". Use alt/else blocks for alternative outcomes.
 - When the user asks to change the previous diagram, reply with the full updated diagram.`;
+
+// -----------------------------------------------------------------------------
+// correções determinísticas de sintaxe
+// -----------------------------------------------------------------------------
+
+const MATCHING_CLOSER: Record<string, string> = {
+  "[": "]",
+  "(": ")",
+  "{": "}",
+};
+
+/**
+ * Conserta a forma dos nós de uma linha de fluxograma (erros vistos na fase
+ * 1b). Só mexe em rótulos entre aspas e formas de um caractere ([ ], ( ), { }):
+ * - colchetes trocados: `H["Cliente satisfeito?"}` vira `H{"Cliente satisfeito?"}`
+ *   (se um dos lados é chave, vira decisão; senão fecha com o par de quem abriu);
+ * - pergunta desenhada como passo: `B["Pagamento aprovado?"]` vira
+ *   `B{"Pagamento aprovado?"}`, porque rótulo terminado em "?" é decisão.
+ */
+export const fixFlowchartShapes = (line: string) =>
+  line.replace(
+    /(\b[A-Za-z_][\w-]*)([[({])"([^"\n]*)"([\])}])/g,
+    (match, id: string, open: string, label: string, close: string) => {
+      if (open === "{" || close === "}" || label.trim().endsWith("?")) {
+        return `${id}{"${label}"}`;
+      }
+      if (MATCHING_CLOSER[open] === close) {
+        return match;
+      }
+      return `${id}${open}"${label}"${MATCHING_CLOSER[open]}`;
+    },
+  );
+
+const isFlowchart = (text: string) =>
+  /^\s*(flowchart|graph)\b/.test(text.trimStart());
+
+const fixFlowchartLines = (text: string) =>
+  isFlowchart(text)
+    ? text.split("\n").map(fixFlowchartShapes).join("\n")
+    : text;
 
 // -----------------------------------------------------------------------------
 // limpeza do texto em streaming
@@ -148,8 +199,11 @@ const FENCE = "```";
  * no início (modelos/servidores que não separam o raciocínio), a cerca
  * ```mermaid de abertura e a ``` de fechamento (e o que vier depois dela).
  *
- * `final = false` é usado durante o streaming: o que ainda pode virar uma
- * dessas marcas fica retido até ter certeza.
+ * `final = false` é usado durante o streaming: só linhas completas saem (a
+ * última, ainda incompleta, fica retida), o que também segura qualquer coisa
+ * que ainda possa virar uma dessas marcas.
+ *
+ * Em fluxogramas, cada linha completa passa por `fixFlowchartShapes`.
  */
 export const sanitizeMermaidResponse = (raw: string, final = true) => {
   let text = raw.trimStart();
@@ -177,12 +231,16 @@ export const sanitizeMermaidResponse = (raw: string, final = true) => {
   const closingFence = text.search(/(^|\n)```/);
   if (closingFence !== -1) {
     text = text.slice(0, closingFence);
-  } else if (!final) {
-    // pode ser o começo da cerca de fechamento: segura até saber
-    text = text.replace(/\n`{1,2}$/, "");
+    // depois da cerca de fechamento não vem mais nada útil
+    final = true;
   }
 
-  return final ? text.trim() : text;
+  if (final) {
+    return fixFlowchartLines(text.trim());
+  }
+
+  // só linhas completas
+  return fixFlowchartLines(text.slice(0, text.lastIndexOf("\n") + 1));
 };
 
 /**

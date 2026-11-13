@@ -93,10 +93,55 @@ Em modo de desenvolvimento, o "Texto para diagrama" chama `http://localhost:3016
 
 ![Validação no Firefox: o fluxograma da esquerda foi gerado offline](prints/fase1-firefox-validacao.webp)
 
-### Observação para depois
+## Fase 1b — Prompt mais rico e correção de formas (13/11/2026)
 
-Pedidos curtos tendem a virar fluxogramas lineares, e às vezes o processo é linear mesmo. Quando o pedido descreve condições e caminhos, o modelo gera ramificações (caso do GTA 6). Isso pode ser refinado no prompt ou em perfis de geração mais adiante.
+Na validação da Fase 1 apareceu um problema: pedidos curtos ("fluxograma de entrega") viravam fluxogramas em linha reta.
 
-![Depois: fluxograma gerado pela IA local](prints/fase1-depois-fluxograma.jpg)
+### O que mudou
 
-![Configuração da IA local](prints/fase1-configuracao.jpg)
+- **Prompt de sistema** ([`localLLM.ts`](../excalidraw-app/ai/localLLM.ts)):
+  - Pede o processo "como acontece de verdade", não só o caminho feliz: pontos de decisão naturais (validações, aprovações, disponibilidade, sucesso ou falha), o que acontece em cada saída e laços de volta quando algo precisa ser refeito.
+  - Toda decisão tem pelo menos duas saídas rotuladas e não pode haver beco sem saída.
+  - Meta de 8 a 16 nós; linha reta só quando o processo não tem escolhas.
+  - Se o usuário descrever os passos, o modelo segue a descrição sem inventar etapas.
+- **Correção determinística das formas** (`fixFlowchartShapes`), aplicada a cada linha completa do fluxograma ainda durante o streaming:
+  - colchetes trocados: `H["Cliente satisfeito?"}` vira `H{...}`. Esse erro quebrava o diagrama (1 em 12 respostas no primeiro teste);
+  - pergunta desenhada como passo: `B["Pagamento aprovado?"]` vira losango `B{...}`.
+- O texto passa a ser mostrado linha a linha durante a geração (antes saía caractere a caractere), o que permite corrigir cada linha antes de ela aparecer.
+
+### Comparação (A = prompt da fase 1, B = prompt novo)
+
+Foram 6 pedidos curtos, 3 gerações de cada com cada prompt (36 no total), com o script [`bench/prompt_ab.py`](bench/prompt_ab.py). As saídas estão em [`bench/prompt-ab-resultado.json`](bench/prompt-ab-resultado.json).
+
+|  | A (fase 1) | B (novo) |
+| --- | --- | --- |
+| Nós por fluxograma (média) | 10,1 | 13,4 |
+| Losangos de decisão desenhados (média, após a correção) | 1,8 | 3,2 |
+| Laços (setas para trás) | 1,1 | 2,1 |
+| Fluxogramas sem nenhuma decisão | 3 de 18 | 1 de 18 |
+| Tempo médio | 1,8 s | 2,5 s |
+| Válidos no conversor do Excalidraw (após a correção) | 18 de 18 | 18 de 18 |
+
+Decisões por pedido (`{...}` na resposta crua, 3 gerações):
+
+| Pedido                           | A       | B       |
+| -------------------------------- | ------- | ------- |
+| Entrega de pedido de loja online | 0, 0, 0 | 3, 3, 4 |
+| Contratação de funcionário       | 4, 3, 4 | 4, 4, 5 |
+| Login de aplicativo              | 2, 2, 1 | 3, 2, 3 |
+| Café na cafeteira                | 1, 1, 1 | 2, 4, 0 |
+| Suporte técnico de internet      | 1, 2, 2 | 4, 4, 4 |
+| Empréstimo de livro              | 2, 2, 2 | 3, 3, 2 |
+
+![Fluxograma de entrega, pedido curto, com o prompt novo](prints/fase1b-entrega-com-decisoes.jpg)
+
+### Verificação
+
+- 30 testes do cliente: 14 novos para a correção de formas e o streaming linha a linha, mais os 16 da Fase 1.
+- Os testes do diálogo e do app continuam passando, sem erros de typecheck e de lint.
+- No navegador do painel, o pedido curto de entrega gerou 3 decisões em losango e um laço.
+- Falta a sua validação no Firefox.
+
+### Incidente durante o desenvolvimento (sem impacto no código)
+
+O servidor do Vite chegou a guardar em cache uma versão vazia de `localLLM.ts`, lida no meio de uma regravação do formatador. Um `touch` no arquivo resolveu. Se o diálogo parar de responder logo depois de editar arquivos, recarregue a página ou reinicie o `yarn start`.
