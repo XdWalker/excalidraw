@@ -118,6 +118,7 @@ export type ActionName =
   | "organizeElements"
   | "organizeElementsTopToBottom"
   | "organizeElementsLeftToRight"
+  | "cleanSketch"
   | "flipHorizontal"
   | "flipVertical"
   | "deselect"

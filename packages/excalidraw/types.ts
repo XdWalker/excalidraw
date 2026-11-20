@@ -1099,6 +1099,19 @@ export interface ExcalidrawProps {
     appState: AppState,
   ) => JSX.Element | null;
   aiEnabled?: boolean;
+  /**
+   * Reads handwriting (fork ia-local, fase 5): one image per handwritten
+   * word/line, returns the text of each (null when unreadable). Used by
+   * "Clean up sketch" to turn handwritten labels into text.
+   */
+  recognizeHandwriting?: (
+    images: Blob[],
+    opts: {
+      signal?: AbortSignal;
+      /** the editor's language (e.g. "pt-BR"), a hint for the reader */
+      language?: string;
+    },
+  ) => Promise<(string | null)[]>;
   showDeprecatedFonts?: boolean;
   renderScrollbars?: boolean;
   viewportStatusFrame?: ViewportStatusFrame | null;

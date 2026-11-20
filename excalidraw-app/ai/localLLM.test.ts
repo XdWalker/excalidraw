@@ -10,6 +10,8 @@ import {
   fixFlowchartShapes,
   loadLocalLLMConfig,
   LOCAL_LLM_STORAGE_KEY,
+  handwritingPrompt,
+  localLLMReadHandwriting,
   localLLMStreamFetch,
   localLLMWireframeFetch,
   MERMAID_SYSTEM_PROMPT,
@@ -426,5 +428,73 @@ describe("localLLMWireframeFetch", () => {
 
     expect(result.error?.status).toBe(503);
     expect(result.error?.message).toContain("127.0.0.1:9931");
+  });
+});
+
+describe("localLLMReadHandwriting", () => {
+  let originalFetch: typeof global.fetch;
+
+  beforeEach(() => {
+    originalFetch = global.fetch;
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  const reply = (content: string) =>
+    new Response(
+      JSON.stringify({
+        choices: [{ message: { role: "assistant", content } }],
+      }),
+      { status: 200 },
+    );
+  const image = () => new Blob(["png"], { type: "image/png" });
+
+  it("sends each image with the reading prompt and cleans the answers", async () => {
+    const answers = ["“Início”", "[]", "Pagou?"];
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(async () => reply(answers.shift()!));
+    global.fetch = fetchMock;
+
+    const texts = await localLLMReadHandwriting({
+      config,
+      images: [image(), image(), image()],
+      language: "pt-BR",
+    });
+
+    expect(texts).toEqual(["Início", null, "Pagou?"]);
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    const [text, picture] = body.messages[0].content;
+    expect(text).toEqual({ type: "text", text: handwritingPrompt("pt-BR") });
+    expect(text.text).toContain("pt-BR");
+    expect(picture.type).toBe("image_url");
+    expect(picture.image_url.url).toMatch(/^data:image\/png;base64,/);
+    expect(body.chat_template_kwargs).toEqual({ enable_thinking: false });
+  });
+
+  it("explains a server without vision", async () => {
+    global.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: { message: "image input is not supported by this server" },
+        }),
+        { status: 500 },
+      ),
+    );
+
+    await expect(
+      localLLMReadHandwriting({ config, images: [image()] }),
+    ).rejects.toThrow(/mmproj/);
+  });
+
+  it("returns a friendly error when the server is not running", async () => {
+    global.fetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+
+    await expect(
+      localLLMReadHandwriting({ config, images: [image()] }),
+    ).rejects.toThrow(/127\.0\.0\.1:9931/);
   });
 });

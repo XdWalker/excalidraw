@@ -141,6 +141,7 @@ import DebugCanvas, {
   loadSavedDebugState,
 } from "./components/DebugCanvas";
 import { useSimulatedCollaborators } from "./debugCollaborators";
+import { loadLocalLLMConfig, localLLMReadHandwriting } from "./ai/localLLM";
 import { AIComponents } from "./components/AI";
 import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
 
@@ -954,6 +955,15 @@ const ExcalidrawWrapper = () => {
       })}
     >
       <Excalidraw
+        // fase 5: "Limpar rascunho" lê a letra à mão com a visão da IA local
+        recognizeHandwriting={(images, { signal, language }) =>
+          localLLMReadHandwriting({
+            config: loadLocalLLMConfig(),
+            images,
+            signal,
+            language,
+          })
+        }
         viewportStatusFrame={viewportStatusFrame}
         userToFollow={userToFollow}
         onChange={onChange}

@@ -135,6 +135,7 @@
     "distributeHorizontally": "Distribute horizontally",
     "distributeVertically": "Distribute vertically",
     "organize": "Organize diagram",
+    "cleanSketch": "Clean up sketch",
     "organizeTopToBottom": "Organize diagram top to bottom",
     "organizeLeftToRight": "Organize diagram left to right",
     "flipHorizontal": "Flip horizontal",
@@ -583,6 +584,10 @@
   },
   "toast": {
     "organizeFailed": "Couldn't organize the diagram. Try again.",
+    "cleanSketchNoReader": "Shapes and arrows cleaned up. No handwriting reader is set up, so the handwriting was kept as drawn.",
+    "cleanSketchUnreadable": "Some handwriting couldn't be read and was kept as drawn.",
+    "cleanSketchReaderFailed": "Shapes and arrows cleaned up, but the handwriting couldn't be read ({{reason}}).",
+    "cleanSketchNothing": "Nothing to clean up: draw each shape in one stroke.",
     "addedToLibrary": "Added to library",
     "copyStyles": "Copied styles.",
     "copyToClipboard": "Copied to clipboard.",
@@ -810,7 +815,8 @@
       "noModels": "The local AI server has no models available.",
       "generationFailed": "The local AI returned an empty response.",
       "invalidWireframe": "The local AI returned a wireframe that couldn't be read ({{reason}}).",
-      "voiceFailed": "Couldn't transcribe the audio on this computer ({{reason}}). Check that the voice models were downloaded (ia-local/baixar-modelos.sh voz)."
+      "voiceFailed": "Couldn't transcribe the audio on this computer ({{reason}}). Check that the voice models were downloaded (ia-local/baixar-modelos.sh voz).",
+      "noVision": "The local AI can't read images: start llama-server with the vision projector (--mmproj, see ia-local/README.md, fase 5)."
     }
   },
   "wireframe": {

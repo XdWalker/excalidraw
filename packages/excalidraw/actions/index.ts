@@ -73,6 +73,8 @@ export {
   actionOrganizeTopToBottom,
 } from "./actionOrganize";
 
+export { actionCleanSketch } from "./actionCleanSketch";
+
 export { actionFlipHorizontal, actionFlipVertical } from "./actionFlip";
 
 export {

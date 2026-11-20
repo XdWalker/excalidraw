@@ -382,6 +382,54 @@ exports[`contextMenu element > right-clicking on a group should select whole gro
       },
       "separator",
       {
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M6 21l15 -15l-3 -3l-15 15l3 3"
+            />
+            <path
+              d="M15 6l3 3"
+            />
+            <path
+              d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"
+            />
+          </g>
+        </svg>,
+        "keywords": [
+          "sketch",
+          "clean",
+          "rascunho",
+          "limpar",
+          "handwriting",
+          "ink",
+        ],
+        "label": "labels.cleanSketch",
+        "name": "cleanSketch",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
         "PanelComponent": [Function],
         "icon": <svg
           aria-hidden="true"
@@ -5298,6 +5346,54 @@ exports[`contextMenu element > shows 'Group selection' in context menu for multi
       },
       "separator",
       {
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M6 21l15 -15l-3 -3l-15 15l3 3"
+            />
+            <path
+              d="M15 6l3 3"
+            />
+            <path
+              d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"
+            />
+          </g>
+        </svg>,
+        "keywords": [
+          "sketch",
+          "clean",
+          "rascunho",
+          "limpar",
+          "handwriting",
+          "ink",
+        ],
+        "label": "labels.cleanSketch",
+        "name": "cleanSketch",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
         "PanelComponent": [Function],
         "icon": <svg
           aria-hidden="true"
@@ -6589,6 +6685,54 @@ exports[`contextMenu element > shows 'Ungroup selection' in context menu for gro
         },
       },
       "separator",
+      {
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M6 21l15 -15l-3 -3l-15 15l3 3"
+            />
+            <path
+              d="M15 6l3 3"
+            />
+            <path
+              d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"
+            />
+          </g>
+        </svg>,
+        "keywords": [
+          "sketch",
+          "clean",
+          "rascunho",
+          "limpar",
+          "handwriting",
+          "ink",
+        ],
+        "label": "labels.cleanSketch",
+        "name": "cleanSketch",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
       {
         "PanelComponent": [Function],
         "icon": <svg
@@ -8687,6 +8831,54 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
       },
       "separator",
       {
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M6 21l15 -15l-3 -3l-15 15l3 3"
+            />
+            <path
+              d="M15 6l3 3"
+            />
+            <path
+              d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"
+            />
+          </g>
+        </svg>,
+        "keywords": [
+          "sketch",
+          "clean",
+          "rascunho",
+          "limpar",
+          "handwriting",
+          "ink",
+        ],
+        "label": "labels.cleanSketch",
+        "name": "cleanSketch",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
+      {
         "PanelComponent": [Function],
         "icon": <svg
           aria-hidden="true"
@@ -9748,6 +9940,54 @@ exports[`contextMenu element > shows context menu for element > [end of test] ap
         },
       },
       "separator",
+      {
+        "icon": <svg
+          aria-hidden="true"
+          className=""
+          fill="none"
+          focusable="false"
+          role="img"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              d="M0 0h24v24H0z"
+              stroke="none"
+            />
+            <path
+              d="M6 21l15 -15l-3 -3l-15 15l3 3"
+            />
+            <path
+              d="M15 6l3 3"
+            />
+            <path
+              d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2"
+            />
+          </g>
+        </svg>,
+        "keywords": [
+          "sketch",
+          "clean",
+          "rascunho",
+          "limpar",
+          "handwriting",
+          "ink",
+        ],
+        "label": "labels.cleanSketch",
+        "name": "cleanSketch",
+        "perform": [Function],
+        "predicate": [Function],
+        "trackEvent": {
+          "category": "element",
+        },
+      },
       {
         "PanelComponent": [Function],
         "icon": <svg

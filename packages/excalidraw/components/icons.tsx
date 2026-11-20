@@ -2063,6 +2063,17 @@ export const laserPointerToolIcon = createIcon(
   20,
 );
 
+// "Limpar rascunho" (fork ia-local): tabler "wand" (MIT)
+export const CleanSketchIcon = createIcon(
+  <g stroke="currentColor" fill="none">
+    <path stroke="none" d="M0 0h24v24H0z" />
+    <path d="M6 21l15 -15l-3 -3l-15 15l3 3" />
+    <path d="M15 6l3 3" />
+    <path d="M9 3a2 2 0 0 0 2 2a2 2 0 0 0 -2 2a2 2 0 0 0 -2 -2a2 2 0 0 0 2 -2" />
+  </g>,
+  tablerIconProps,
+);
+
 // "Organizar" (fork ia-local): tabler "hierarchy-2" (MIT)
 export const OrganizeIcon = createIcon(
   <g stroke="currentColor" fill="none">

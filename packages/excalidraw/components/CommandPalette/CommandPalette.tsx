@@ -330,6 +330,7 @@ function CommandPaletteInner({
         actionManager.actions.organizeElements,
         actionManager.actions.organizeElementsTopToBottom,
         actionManager.actions.organizeElementsLeftToRight,
+        actionManager.actions.cleanSketch,
         actionManager.actions.duplicateSelection,
         actionManager.actions.flipHorizontal,
         actionManager.actions.flipVertical,

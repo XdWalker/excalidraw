@@ -6,6 +6,7 @@
  * direto do navegador, sem backend nem proxy. Nada sai da máquina.
  */
 import { parseSSEStream } from "@excalidraw/excalidraw";
+import { getDataURL } from "@excalidraw/excalidraw/data/blob";
 import { RequestError } from "@excalidraw/excalidraw/errors";
 import { t } from "@excalidraw/excalidraw/i18n";
 import {
@@ -556,4 +557,125 @@ export const localLLMWireframeFetch = async ({
       }),
     };
   }
+};
+
+// -----------------------------------------------------------------------------
+// letra à mão (fase 5): o mesmo modelo, com visão
+// -----------------------------------------------------------------------------
+
+export const handwritingPrompt = (language?: string) =>
+  `This image shows handwriting from a sketched diagram: the label of a box, of an arrow, or a short note. It may span a few lines.${
+    language ? ` It is most likely written in ${language}.` : ""
+  } Transcribe exactly what is written, keeping line breaks, with accents. Reply with the text only: no quotes, no brackets, no explanation. If nothing is legible, reply with nothing.`;
+
+const cleanReadText = (text: string) => {
+  const cleaned = text
+    .trim()
+    .replace(/^["'“”‘’`]+|["'“”‘’`]+$/g, "")
+    .trim();
+  // "[]", "()", "-", "N/A"...: the model's way of saying "nothing here"
+  return /[\p{L}\p{N}]/u.test(cleaned) && !/^n\/?a$/i.test(cleaned)
+    ? cleaned
+    : "";
+};
+
+/**
+ * Reads each image (one handwritten word/line) with the local model's vision.
+ * Two at a time: llama-server runs two requests in parallel by default.
+ */
+export const localLLMReadHandwriting = async ({
+  config,
+  images,
+  signal,
+  language,
+}: {
+  config: LocalLLMConfig;
+  images: Blob[];
+  signal?: AbortSignal;
+  /** e.g. "pt-BR": a hint, models otherwise guess other languages */
+  language?: string;
+}): Promise<(string | null)[]> => {
+  const baseURL = normalizeBaseURL(config.baseURL);
+  let model: string;
+  try {
+    model = await resolveModel(config, signal);
+  } catch (error) {
+    if (error instanceof RequestError) {
+      throw error;
+    }
+    throw new RequestError({
+      message: t("localAI.errors.unreachable", { url: baseURL }),
+      status: 503,
+    });
+  }
+
+  const readOne = async (image: Blob): Promise<string | null> => {
+    const dataURL = await getDataURL(image);
+    let response: Response;
+    try {
+      response = await fetch(`${baseURL}/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: handwritingPrompt(language) },
+                { type: "image_url", image_url: { url: dataURL } },
+              ],
+            },
+          ],
+          stream: false,
+          temperature: 0,
+          max_tokens: 60,
+          chat_template_kwargs: { enable_thinking: false }, // llama.cpp
+          reasoning_effort: "none", // Ollama
+        }),
+        signal,
+      });
+    } catch (error: any) {
+      if (isAbortError(error, signal)) {
+        throw error;
+      }
+      throw new RequestError({
+        message: t("localAI.errors.unreachable", { url: baseURL }),
+        status: 503,
+      });
+    }
+    if (!response.ok) {
+      const message = String((await readErrorMessage(response)) || "");
+      // llama.cpp/Ollama without a vision projector reject image input
+      if (/image|multimodal|mmproj|vision/i.test(message)) {
+        throw new RequestError({
+          message: t("localAI.errors.noVision"),
+          status: response.status,
+        });
+      }
+      throw new RequestError({
+        message: t("localAI.errors.serverError", {
+          status: response.status,
+          message: message.slice(0, 300),
+        }),
+        status: response.status,
+      });
+    }
+    const json = await response.json();
+    const text = json?.choices?.[0]?.message?.content;
+    return typeof text === "string" && cleanReadText(text)
+      ? cleanReadText(text)
+      : null;
+  };
+
+  const results: (string | null)[] = new Array(images.length).fill(null);
+  let next = 0;
+  const worker = async () => {
+    while (next < images.length) {
+      const index = next++;
+      results[index] = await readOne(images[index]);
+    }
+  };
+  await Promise.all([worker(), worker()]);
+  return results;
 };

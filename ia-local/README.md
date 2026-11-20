@@ -490,3 +490,80 @@ Pelas notícias, o reconhecimento de voz local do Firefox chegou na versão **16
 - Cerca de 7 s por pedido, quase fixo: o Whisper sempre processa uma janela de 30 s, mesmo para falas curtas.
 - Usa 8 núcleos durante a transcrição, com prioridade baixa (`Nice=5`).
 - Máquinas mais fracas: o large-v3 pode ficar lento demais. Nelas, use o large-v3-turbo (`WHISPER_MODEL=…/ggml-large-v3-turbo-q8_0.bin`) ou só o Whisper do navegador (deixe `VITE_APP_LOCAL_ASR_URL` vazio).
+
+## Fase 5 — Rascunho à mão vira diagrama limpo (13/11/2026, feita sem você na frente do computador)
+
+Você seleciona um rascunho feito com o lápis e escolhe **"Limpar rascunho"** (menu de contexto ou paleta de comandos):
+
+- formas desenhadas à mão viram retângulos, losangos e elipses;
+- setas viram setas presas às formas;
+- a letra à mão é lida pela **visão do Qwen local** e vira o rótulo da forma, o rótulo da seta ou um texto solto.
+
+Tudo num único passo de desfazer.
+
+### Como funciona
+
+- **Análise** ([`packages/excalidraw/sketch/cleanSketch.ts`](../packages/excalidraw/sketch/cleanSketch.ts), sem IA):
+  1. **Formas e setas:** cada traço passa pelo **reconhecedor de formas do próprio Excalidraw** (o do "Desenhar forma"), agora aplicado depois do desenho. Formas fechadas com mais de 60 px viram retângulo, losango ou elipse; traços retos viram conectores.
+  2. **Ponta de seta desenhada à parte:** um traço curto perto da ponta de uma linha vira a ponta da seta e define a direção.
+  3. **Ligação:** cada ponta de seta se liga à forma mais próxima (até 40 px).
+  4. **Letra:** primeiro se decide o destino de cada traço restante (dentro de qual forma, perto de qual seta ou solto), e tudo o que vai para o mesmo destino é lido como **uma imagem só**. A tinta solta é agrupada por proximidade.
+- **Ação** ([`actionCleanSketch.tsx`](../packages/excalidraw/actions/actionCleanSketch.tsx)):
+  - exporta cada grupo de letra como PNG (traço preto e fino, cerca de 190 px de altura);
+  - chama `recognizeHandwriting` (nova propriedade do `<Excalidraw>`), informando o idioma do editor;
+  - monta o diagrama com `convertToExcalidrawElements`.
+  - A letra que não puder ser lida **fica como foi desenhada, agrupada**, com um aviso; o mesmo vale quando não há leitor configurado ou ele falha.
+- **Leitor no app** ([`excalidraw-app/ai/localLLM.ts`](../excalidraw-app/ai/localLLM.ts), `localLLMReadHandwriting`): envia cada imagem ao mesmo servidor do Qwen (formato de imagem da API OpenAI), duas por vez. Respostas como "[]" contam como "não legível". Se o servidor não tiver visão, a mensagem explica como ligar.
+
+### Mudança no servidor do Qwen (autorizada antes de você sair)
+
+- **Projetor de visão:** `mmproj-F16.gguf` (0,93 GB) baixado do mesmo repositório do seu modelo (`unsloth/Qwen3.8-27B-GGUF`), salvo como `~/tools/models/mmproj-Qwen3.8-27B-F16.gguf`.
+- **`~/tools/llama.cpp/start-qwen.sh`:** ganhou as variáveis `MMPROJ` e `MMPROJ_OFFLOAD`. Sem `MMPROJ`, ele se comporta exatamente como antes. A cópia original está em `start-qwen.sh.antes-visao`.
+- **`~/.config/systemd/user/qwen-llama.service.d/ia-local-visao.conf`:** liga a visão com o projetor **na CPU**.
+  - Na GPU não coube: com o modelo de 27B e 128k de contexto sobram ~1,5 GB, e o servidor **caiu** ao ler a primeira imagem (falha de segmentação depois de falta de memória).
+  - Na CPU a GPU fica exatamente como antes (23,0 GB). O contexto (128k), o modelo e o `opencode.jsonc` não mudaram.
+- **Para desligar a visão:**
+  ```bash
+  rm ~/.config/systemd/user/qwen-llama.service.d/ia-local-visao.conf
+  systemctl --user daemon-reload && systemctl --user restart qwen-llama
+  ```
+
+### Teste sem mesa digitalizadora
+
+Montei no app um fluxograma "desenhado à mão" ([`demo/sketchDemo.js`](demo/sketchDemo.js)):
+
+- formas com tremido, desenhadas num único traço;
+- setas com a ponta desenhada à parte;
+- palavras escritas como traços da **fonte Hershey** (traço único, do pacote npm `hersheytext`, MIT). Ela não tem acentos, por isso "Inicio" e "Nao" foram escritos sem.
+
+| Tentativa | Grupos de letra | Lidos certo | O que mudou |
+| --- | --- | --- | --- |
+| 1 | 9 (palavras quebradas) | 0 de 9 | — |
+| 2 | 9 | 1 de 9 | idioma do editor (pt-BR) no pedido; o modelo chutava francês e espanhol ("depuis", "hijo") |
+| 3 | 7 | 5 de 7 | agrupar por destino (forma ou seta), não só por proximidade; traço fino (o grosso, ampliado, virava borrão) |
+| **4** | **7** | **7 de 7** | imagem com ~190 px de altura em vez de ~96 ("Pagou?" era lido como "Pergunta?") |
+
+Na versão final: 4 formas, 3 setas presas às formas e com ponta, e os rótulos "Início" (com acento), "Pagou?", "Enviar", "Fim", "Sim", "Nao" e a nota solta "revisar depois". Levou **19 s** com o projetor na CPU; ao repetir o mesmo desenho, 3,5 s, porque o servidor reaproveita as imagens.
+
+![Rascunho à mão](prints/fase5-antes.png)
+
+![Depois de "Limpar rascunho"](prints/fase5-depois.png)
+
+### Verificação
+
+- **10 testes** ([`cleanSketch.test.tsx`](../packages/excalidraw/tests/cleanSketch.test.tsx)), com traços sintéticos ([`helpers/sketchStrokes.ts`](../packages/excalidraw/tests/helpers/sketchStrokes.ts)), cobrindo:
+  - o reconhecedor do Excalidraw aceita os traços;
+  - formas, setas com ponta à parte, direção da seta e letras pequenas;
+  - destino de cada palavra e montagem do diagrama;
+  - a ação no editor: seta ligada, rótulo, um passo de desfazer, sem leitor e com leitor falhando.
+- **3 testes do leitor no app:** formato do pedido com imagem, limpeza das respostas, servidor sem visão e servidor fora do ar.
+- **Typecheck e lint limpos.** O snapshot do menu de contexto ganhou só o item novo.
+- **Falta você testar no Firefox com rascunhos seus**, de mouse ou caneta.
+
+### Limitações
+
+- **Cada forma num traço só.** Um retângulo feito em quatro traços vira quatro linhas soltas.
+- **Seta em "L" ou curva** não é reconhecida como seta (o reconhecedor só aceita traços retos).
+- A letra foi testada com uma **fonte de traço único**, não com letra cursiva de verdade; letra cursiva e acentos escritos à mão podem ler pior.
+- **Velocidade:** com o projetor na CPU, cada palavra leva cerca de 2 a 3 s. Num rascunho com muitos rótulos, isso soma.
+- **Letra grande vira forma ou seta** (achado no teste com o Firefox, 20/11/2026). Os traços são separados pelo tamanho antes da leitura: fechado com 60 px ou mais vira forma, reto com 50 px ou mais vira linha ou seta, e o resto é escrita. Escrevendo "Walker" com letras grandes, os traços do W viraram setas e o B virou forma. Escreva pequeno, mais ou menos 1/3 da altura da caixa, com o zoom em 100%. Correção possível: tratar traços lado a lado, em fila e de altura parecida como palavra, mesmo grandes.

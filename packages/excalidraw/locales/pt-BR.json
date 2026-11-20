@@ -129,6 +129,7 @@
     "distributeHorizontally": "Distribuir horizontalmente",
     "distributeVertically": "Distribuir verticalmente",
     "organize": "Organizar diagrama",
+    "cleanSketch": "Limpar rascunho",
     "organizeTopToBottom": "Organizar diagrama de cima para baixo",
     "organizeLeftToRight": "Organizar diagrama da esquerda para a direita",
     "flipHorizontal": "Inverter horizontalmente",
@@ -564,6 +565,10 @@
   },
   "toast": {
     "organizeFailed": "Não foi possível organizar o diagrama. Tente de novo.",
+    "cleanSketchNoReader": "Formas e setas limpas. Não há leitor de letra configurado; a escrita ficou como foi desenhada.",
+    "cleanSketchUnreadable": "Parte da letra não pôde ser lida e ficou como foi desenhada.",
+    "cleanSketchReaderFailed": "Formas e setas limpas, mas a letra não pôde ser lida ({{reason}}).",
+    "cleanSketchNothing": "Nada para limpar: desenhe cada forma num traço só.",
     "addedToLibrary": "Adicionado à biblioteca",
     "copyStyles": "Estilos copiados.",
     "copyToClipboard": "Copiado para área de transferência.",
@@ -777,7 +782,8 @@
       "noModels": "O servidor da IA local não tem nenhum modelo disponível.",
       "generationFailed": "A IA local devolveu uma resposta vazia.",
       "invalidWireframe": "A IA local devolveu um wireframe que não pôde ser lido ({{reason}}).",
-      "voiceFailed": "Não foi possível transcrever o áudio neste computador ({{reason}}). Confira se os modelos de voz foram baixados (ia-local/baixar-modelos.sh voz)."
+      "voiceFailed": "Não foi possível transcrever o áudio neste computador ({{reason}}). Confira se os modelos de voz foram baixados (ia-local/baixar-modelos.sh voz).",
+      "noVision": "A IA local não lê imagens: inicie o llama-server com o projetor de visão (--mmproj, veja ia-local/README.md, fase 5)."
     }
   },
   "wireframe": {
