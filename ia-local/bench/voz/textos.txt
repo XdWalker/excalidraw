@@ -1,0 +1,4 @@
+fala1.wav|Fluxograma do processo de login: o usuário digita e-mail e senha, o sistema valida e, se estiver correto, abre o painel; se não, mostra uma mensagem de erro.
+fala2.wav|Página inicial de uma loja de carros usados, com busca por marca e preço e uma grade de carros em destaque.
+fala3.wav|Adicione uma etapa de emissão de nota fiscal antes do envio.
+fala4.wav|Diagrama de sequência entre cliente, API e banco de dados para cadastrar um produto.

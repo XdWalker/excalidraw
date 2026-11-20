@@ -27,3 +27,6 @@ dev-dist
 html
 meta*.json
 .claude
+
+# modelos locais (fork ia-local): baixados por ia-local/baixar-modelos.sh
+public/models/

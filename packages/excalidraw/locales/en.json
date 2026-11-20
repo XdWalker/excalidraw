@@ -809,7 +809,8 @@
       "serverError": "The local AI returned an error ({{status}}): {{message}}",
       "noModels": "The local AI server has no models available.",
       "generationFailed": "The local AI returned an empty response.",
-      "invalidWireframe": "The local AI returned a wireframe that couldn't be read ({{reason}})."
+      "invalidWireframe": "The local AI returned a wireframe that couldn't be read ({{reason}}).",
+      "voiceFailed": "Couldn't transcribe the audio on this computer ({{reason}}). Check that the voice models were downloaded (ia-local/baixar-modelos.sh voz)."
     }
   },
   "wireframe": {
@@ -822,5 +823,15 @@
     "new": "Start over",
     "generatedIn": "Generated in {{seconds}} s by the local AI",
     "empty": "The wireframe will show up here"
+  },
+  "voice": {
+    "start": "Speak (voice to text, on this computer)",
+    "stop": "Stop recording",
+    "cancel": "Cancel",
+    "transcribing": "Transcribing…",
+    "nothingHeard": "Nothing was heard. Try again closer to the microphone.",
+    "permissionDenied": "Microphone access was denied. Allow it in the browser to use voice.",
+    "noMicrophone": "No microphone was found.",
+    "unsupported": "This browser can't record audio."
   }
 }

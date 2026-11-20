@@ -36,6 +36,7 @@ export const TTDDialog = (
         renderWarning?: TTTDDialog.renderWarning;
         onWireframeSubmit?: TTTDDialog.onWireframeSubmit;
         renderChatHeader?: TTTDDialog.renderChatHeader;
+        onTranscribeAudio?: TTTDDialog.onTranscribeAudio;
         persistenceAdapter: TTDPersistenceAdapter;
       }
     | { __fallback: true },
@@ -99,6 +100,7 @@ const TTDDialogBase = withInternalFallback(
         renderWarning?: TTTDDialog.renderWarning;
         onWireframeSubmit?: TTTDDialog.onWireframeSubmit;
         renderChatHeader?: TTTDDialog.renderChatHeader;
+        onTranscribeAudio?: TTTDDialog.onTranscribeAudio;
         persistenceAdapter: TTDPersistenceAdapter;
       }
     | { __fallback: true }
@@ -219,6 +221,7 @@ const TTDDialogBase = withInternalFallback(
                 renderWelcomeScreen={rest.renderWelcomeScreen}
                 renderWarning={rest.renderWarning}
                 renderChatHeader={rest.renderChatHeader}
+                onTranscribeAudio={rest.onTranscribeAudio}
                 persistenceAdapter={rest.persistenceAdapter}
               />
             </TTDDialogTab>
@@ -234,6 +237,7 @@ const TTDDialogBase = withInternalFallback(
             <TTDDialogTab className="ttd-dialog-content" tab="wireframe">
               <WireframeToExcalidraw
                 onWireframeSubmit={rest.onWireframeSubmit}
+                onTranscribeAudio={rest.onTranscribeAudio}
               />
             </TTDDialogTab>
           )}

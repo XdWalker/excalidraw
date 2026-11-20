@@ -17,6 +17,8 @@ import { insertToEditor } from "./common";
 import { TTDDialogPanel } from "./TTDDialogPanel";
 import { TTDDialogPanels } from "./TTDDialogPanels";
 import { TTDDialogSubmitShortcut } from "./TTDDialogSubmitShortcut";
+import { appendSpokenText } from "./utils/voice";
+import { VoiceInputButton } from "./VoiceInputButton";
 
 import type { BinaryFiles } from "../../types";
 import type { Wireframe } from "../../wireframe/wireframe";
@@ -29,8 +31,10 @@ import type { TTTDDialog } from "./types";
  */
 export const WireframeToExcalidraw = ({
   onWireframeSubmit,
+  onTranscribeAudio,
 }: {
   onWireframeSubmit: TTTDDialog.onWireframeSubmit;
+  onTranscribeAudio?: TTTDDialog.onTranscribeAudio;
 }) => {
   const app = useApp();
   const { theme } = useUIAppState();
@@ -184,24 +188,36 @@ export const WireframeToExcalidraw = ({
           ]}
           renderSubmitShortcut={() => <TTDDialogSubmitShortcut />}
         >
-          <textarea
-            className="ttd-dialog-wireframe-input"
-            value={prompt}
-            autoFocus
-            spellCheck
-            placeholder={
-              wireframe
-                ? t("wireframe.refinePlaceholder")
-                : t("wireframe.placeholder")
-            }
-            onChange={(event) => setPrompt(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === KEYS.ENTER && event[KEYS.CTRL_OR_CMD]) {
-                event.preventDefault();
-                generate();
+          <div className="ttd-dialog-wireframe-input-wrapper">
+            <textarea
+              className="ttd-dialog-wireframe-input"
+              value={prompt}
+              autoFocus
+              spellCheck
+              placeholder={
+                wireframe
+                  ? t("wireframe.refinePlaceholder")
+                  : t("wireframe.placeholder")
               }
-            }}
-          />
+              onChange={(event) => setPrompt(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === KEYS.ENTER && event[KEYS.CTRL_OR_CMD]) {
+                  event.preventDefault();
+                  generate();
+                }
+              }}
+            />
+            {onTranscribeAudio && (
+              <VoiceInputButton
+                className="ttd-dialog-wireframe-voice"
+                onTranscribeAudio={onTranscribeAudio}
+                disabled={isGenerating}
+                onText={(text) =>
+                  setPrompt((current) => appendSpokenText(current, text))
+                }
+              />
+            )}
+          </div>
         </TTDDialogPanel>
         <TTDDialogPanel
           label={

@@ -40,6 +40,7 @@ const TextToDiagramContent = ({
   renderWelcomeScreen,
   renderWarning,
   renderChatHeader,
+  onTranscribeAudio,
   persistenceAdapter,
 }: {
   mermaidToExcalidrawLib: MermaidToExcalidrawLibProps;
@@ -50,6 +51,7 @@ const TextToDiagramContent = ({
   renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
   renderWarning?: TTTDDialog.renderWarning;
   renderChatHeader?: TTTDDialog.renderChatHeader;
+  onTranscribeAudio?: TTTDDialog.onTranscribeAudio;
   persistenceAdapter: TTDPersistenceAdapter;
 }) => {
   const app = useApp();
@@ -244,6 +246,7 @@ const TextToDiagramContent = ({
         onViewAsMermaid={onViewAsMermaid}
         renderWarning={renderWarning}
         renderChatHeader={renderChatHeader}
+        onTranscribeAudio={onTranscribeAudio}
         renderWelcomeScreen={renderWelcomeScreen}
       />
       {showPreview && (
@@ -268,6 +271,7 @@ export const TextToDiagram = ({
   renderWelcomeScreen,
   renderWarning,
   renderChatHeader,
+  onTranscribeAudio,
   persistenceAdapter,
 }: {
   mermaidToExcalidrawLib: MermaidToExcalidrawLibProps;
@@ -278,6 +282,7 @@ export const TextToDiagram = ({
   renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
   renderWarning?: TTTDDialog.renderWarning;
   renderChatHeader?: TTTDDialog.renderChatHeader;
+  onTranscribeAudio?: TTTDDialog.onTranscribeAudio;
   persistenceAdapter: TTDPersistenceAdapter;
 }) => {
   return (
@@ -288,6 +293,7 @@ export const TextToDiagram = ({
       renderWelcomeScreen={renderWelcomeScreen}
       renderWarning={renderWarning}
       renderChatHeader={renderChatHeader}
+      onTranscribeAudio={onTranscribeAudio}
       persistenceAdapter={persistenceAdapter}
     />
   );

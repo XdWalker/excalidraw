@@ -1,0 +1,16 @@
+[Unit]
+Description=Whisper local (whisper.cpp, CPU) para a voz do Excalidraw ia-local
+
+[Service]
+Type=simple
+ExecStart=%h/tools/whisper.cpp/start-whisper.sh
+Restart=on-failure
+RestartSec=10
+# baixa prioridade de CPU: não atrapalha o resto da máquina
+Nice=5
+MemoryMax=4G
+# Logs: journalctl --user -u whisper-local
+SyslogIdentifier=whisper-local
+
+[Install]
+WantedBy=default.target

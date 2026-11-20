@@ -776,7 +776,8 @@
       "serverError": "A IA local respondeu com erro ({{status}}): {{message}}",
       "noModels": "O servidor da IA local não tem nenhum modelo disponível.",
       "generationFailed": "A IA local devolveu uma resposta vazia.",
-      "invalidWireframe": "A IA local devolveu um wireframe que não pôde ser lido ({{reason}})."
+      "invalidWireframe": "A IA local devolveu um wireframe que não pôde ser lido ({{reason}}).",
+      "voiceFailed": "Não foi possível transcrever o áudio neste computador ({{reason}}). Confira se os modelos de voz foram baixados (ia-local/baixar-modelos.sh voz)."
     }
   },
   "wireframe": {
@@ -789,5 +790,15 @@
     "new": "Começar de novo",
     "generatedIn": "Gerado em {{seconds}} s pela IA local",
     "empty": "O wireframe aparece aqui"
+  },
+  "voice": {
+    "start": "Falar (voz vira texto, neste computador)",
+    "stop": "Parar de gravar",
+    "cancel": "Cancelar",
+    "transcribing": "Transcrevendo…",
+    "nothingHeard": "Não deu para ouvir nada. Tente de novo mais perto do microfone.",
+    "permissionDenied": "O acesso ao microfone foi negado. Permita no navegador para usar a voz.",
+    "noMicrophone": "Nenhum microfone foi encontrado.",
+    "unsupported": "Este navegador não consegue gravar áudio."
   }
 }

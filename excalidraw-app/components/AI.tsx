@@ -10,8 +10,10 @@ import {
 } from "@excalidraw/excalidraw";
 import { getDataURL } from "@excalidraw/excalidraw/data/blob";
 import { safelyParseJSON } from "@excalidraw/common";
+import { t } from "@excalidraw/excalidraw/i18n";
 
 import type { StreamChunk } from "@excalidraw/excalidraw";
+import type { TTTDDialog } from "@excalidraw/excalidraw/components/TTDDialog/types";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import {
@@ -23,6 +25,52 @@ import { cacheMermaidChunks } from "../data/cacheMermaidChunks";
 import { TTDIndexedDBAdapter } from "../data/TTDStorage";
 
 import { LocalAIStatus } from "./LocalAIStatus";
+
+/**
+ * Voice input (fase 4/4b): the local whisper.cpp server (large model, every
+ * CPU core) when it's running; otherwise Whisper in a Web Worker, from the
+ * models served by the app itself. Both load the first time the microphone
+ * is used.
+ */
+const transcribeLocally: TTTDDialog.onTranscribeAudio = async ({
+  audio,
+  signal,
+  onProgress,
+}) => {
+  try {
+    const [{ toWhisperAudio, transcribe }, server] = await Promise.all([
+      import("../ai/speech/transcriber"),
+      import("../ai/speech/whisperServer"),
+    ]);
+    const samples = await toWhisperAudio(audio);
+    if (server.LOCAL_ASR_URL) {
+      try {
+        const result = await server.transcribeOnServer(samples, { signal });
+        return { text: result.text, error: null };
+      } catch (error) {
+        if (!(error instanceof server.WhisperServerUnavailable)) {
+          throw error;
+        }
+        console.warn(
+          `whisper-server unavailable (${error.message}), transcribing in the browser`,
+        );
+      }
+    }
+    const result = await transcribe(samples, {
+      signal,
+      onProgress,
+    });
+    return { text: result.text, error: null };
+  } catch (error: any) {
+    return {
+      error: new Error(
+        t("localAI.errors.voiceFailed", {
+          reason: String(error?.message ?? error).slice(0, 200),
+        }),
+      ),
+    };
+  }
+};
 
 export const AIComponents = ({
   excalidrawAPI,
@@ -175,6 +223,8 @@ export const AIComponents = ({
           localLLMStreamFetch({ ...props, config: loadLocalLLMConfig() })
         }
         renderChatHeader={() => <LocalAIStatus />}
+        // fase 4: voz -> texto com o Whisper no navegador (nada sai da máquina)
+        onTranscribeAudio={transcribeLocally}
         // fase 3: texto -> wireframe de interface, com a mesma IA local
         onWireframeSubmit={({ prompt, previous, signal }) =>
           localLLMWireframeFetch({

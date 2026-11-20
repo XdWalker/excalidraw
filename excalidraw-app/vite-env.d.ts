@@ -18,6 +18,13 @@ interface ImportMetaEnv {
   VITE_APP_LOCAL_LLM_URL: string;
   // vazio = primeiro modelo listado pelo servidor
   VITE_APP_LOCAL_LLM_MODEL: string;
+  // voz (fase 4b): whisper-server local (ia-local/README.md); vazio = só o
+  // modelo no navegador, que também é o plano B quando o servidor está fora
+  VITE_APP_LOCAL_ASR_URL: string;
+  // voz (fase 4): "whisper-small" (padrão) ou "whisper-base"
+  VITE_APP_LOCAL_ASR_MODEL: string;
+  // "wasm" ou "webgpu"; vazio = WebGPU quando o navegador tiver
+  VITE_APP_LOCAL_ASR_DEVICE: string;
 
   VITE_APP_FIREBASE_CONFIG: string;
 

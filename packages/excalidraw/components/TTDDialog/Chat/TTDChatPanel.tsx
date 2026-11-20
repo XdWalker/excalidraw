@@ -43,6 +43,7 @@ export const TTDChatPanel = ({
   renderWelcomeScreen,
   renderWarning,
   renderChatHeader,
+  onTranscribeAudio,
 }: {
   chatId: string;
   messages: TChat.ChatMessage[];
@@ -73,6 +74,7 @@ export const TTDChatPanel = ({
   renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
   renderWarning?: TTTDDialog.renderWarning;
   renderChatHeader?: TTTDDialog.renderChatHeader;
+  onTranscribeAudio?: TTTDDialog.onTranscribeAudio;
 }) => {
   const [rateLimits] = useAtom(rateLimitsAtom);
 
@@ -159,6 +161,7 @@ export const TTDChatPanel = ({
         rateLimits={rateLimits}
         renderWelcomeScreen={renderWelcomeScreen}
         renderWarning={renderWarning}
+        onTranscribeAudio={onTranscribeAudio}
       />
     </TTDDialogPanel>
   );

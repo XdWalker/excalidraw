@@ -7,6 +7,8 @@ import { InlineIcon } from "../../InlineIcon";
 import { t } from "../../../i18n";
 
 import { TTDWelcomeMessage } from "../TTDWelcomeMessage";
+import { appendSpokenText } from "../utils/voice";
+import { VoiceInputButton } from "../VoiceInputButton";
 
 import { ChatMessage } from "./ChatMessage";
 
@@ -30,6 +32,7 @@ export const ChatInterface = ({
   onRetry,
   renderWelcomeScreen,
   renderWarning,
+  onTranscribeAudio,
 }: {
   chatId: string;
   messages: TChat.ChatMessage[];
@@ -51,6 +54,7 @@ export const ChatInterface = ({
   onRetry?: (message: TChat.ChatMessage) => void;
   renderWelcomeScreen?: TTTDDialog.renderWelcomeScreen;
   renderWarning?: TTTDDialog.renderWarning;
+  onTranscribeAudio?: TTTDDialog.onTranscribeAudio;
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -172,6 +176,17 @@ export const ChatInterface = ({
               cols={30}
               onInput={onInput}
             />
+            {onTranscribeAudio && (
+              <VoiceInputButton
+                className="chat-interface__voice"
+                onTranscribeAudio={onTranscribeAudio}
+                disabled={isGenerating}
+                onText={(text) => {
+                  onPromptChange(appendSpokenText(currentPrompt, text));
+                  textareaRef.current?.focus();
+                }}
+              />
+            )}
             <button
               className="chat-interface__send-button"
               onClick={handleSubmit}

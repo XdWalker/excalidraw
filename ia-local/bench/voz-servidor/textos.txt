@@ -1,0 +1,6 @@
+apague|Apague tudo isso e faça um diagrama do processo de vendas de sapatos em todo o Brasil.
+login|Fluxograma do processo de login: o usuário digita e-mail e senha, o sistema valida e, se estiver correto, abre o painel; se não, mostra uma mensagem de erro.
+nota|Adicione uma etapa de emissão de nota fiscal antes do envio.
+sequencia|Diagrama de sequência entre cliente, API e banco de dados para cadastrar um produto.
+loja|Página inicial de uma loja de carros usados, com busca por marca e preço e uma grade de carros em destaque.
+troque|Troque o losango de aprovação por um retângulo e ligue ele ao pagamento.

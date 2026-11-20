@@ -147,6 +147,22 @@ export namespace TTTDDialog {
     props: OnWireframeSubmitProps,
   ) => Promise<OnWireframeSubmitRetValue>;
 
+  export type OnTranscribeAudioProps = {
+    /** the recording, as captured by the browser (webm/ogg opus) */
+    audio: Blob;
+    signal: AbortSignal;
+    onProgress?: (progress: { progress?: number }) => void;
+  };
+
+  export type OnTranscribeAudioRetValue =
+    | { text: string; error: null }
+    | { error: Error; text?: undefined };
+
+  /** voice -> text for the request boxes (fork ia-local, fase 4) */
+  export type onTranscribeAudio = (
+    props: OnTranscribeAudioProps,
+  ) => Promise<OnTranscribeAudioRetValue>;
+
   /**
    * extra content rendered in the chat panel header (e.g. which AI
    * backend/model is in use)

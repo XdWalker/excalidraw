@@ -352,3 +352,141 @@ Com a saída forçada por esquema, o Qwen **nunca passou do 4º nível** de anin
 - A qualidade depende do modelo. A mesma frase pode render páginas mais ricas ou mais pobres de uma vez para outra (temperatura 0,4).
 - Ainda pode sobrar algum bloco vazio. Ele não é desenhado, mas o título dele fica.
 - Páginas grandes (80 a 100 blocos) levam de 25 a 30 s no PC de referência. Em máquinas modestas isso vai ser bem mais lento (fase 7).
+
+## Fase 4 — Voz vira diagrama (13/11/2026, feita sem você na frente do computador)
+
+Um **botão de microfone** nas caixas de pedido do "Texto para diagrama" e do "Wireframe". Você fala, o áudio vira texto **no próprio navegador** com o Whisper (nenhum áudio sai da máquina) e o texto entra na caixa para você revisar antes de enviar.
+
+### Como funciona
+
+- **Gravação** (pacote do editor, [`VoiceInputButton.tsx`](../packages/excalidraw/components/TTDDialog/VoiceInputButton.tsx)):
+  - usa o `MediaRecorder` do navegador;
+  - durante a gravação, o botão fica vermelho e o tempo corre; um clique para;
+  - limite de 2 min;
+  - mensagens claras para microfone negado, ausente ou navegador sem gravação;
+  - o diálogo só mostra o botão se o app fornecer `onTranscribeAudio`.
+- **Transcrição** (app, [`excalidraw-app/ai/speech/`](../excalidraw-app/ai/speech/)):
+  - o Whisper roda num Web Worker, com transformers.js 4.3.2 e ONNX Runtime;
+  - é carregado só no primeiro uso do microfone;
+  - modelos e runtime são servidos pelo próprio app (`public/models/`), com `allowRemoteModels = false`: funciona offline.
+- **Modelo:** whisper-small (q8, 250 MB) por padrão; whisper-base (77 MB) com `VITE_APP_LOCAL_ASR_MODEL=whisper-base`.
+- **Aparelho:** WebGPU quando o navegador realmente entrega a GPU, senão WebAssembly. O Chromium do painel declara WebGPU, mas falha ao pedir a GPU; o worker detecta isso e cai para WebAssembly.
+
+### Por que Whisper no navegador
+
+| Opção | Situação |
+| --- | --- |
+| Reconhecimento de voz do Firefox, sem internet | Previsto para o Firefox 161; o seu é o **159**. Fica para depois. |
+| Servidor whisper.cpp local | Mais um programa para cada pessoa do grupo instalar e manter rodando. |
+| **Whisper no navegador (escolhido)** | Nada a instalar além de `ia-local/baixar-modelos.sh voz`; o mesmo vale para máquinas mais fracas. |
+
+### Medição (sem microfone: falas geradas pelo Piper)
+
+Gerei 4 pedidos em português com o sintetizador **Piper** (voz `pt_BR-edresson-low`, a única que funcionou; as vozes "medium" derrubavam o programa), com velocidades diferentes. Os arquivos estão em [`bench/voz/`](bench/voz/). Os números são do navegador do painel (Chromium) em **WebAssembly com 1 thread**, o modo que o Firefox no Linux vai usar.
+
+| Modelo | Tempo por frase (5 a 13 s de fala) | Primeira carga do modelo |
+| --- | --- | --- |
+| whisper-base | 2,0 a 2,8 s | 1,3 s |
+| whisper-small | 6,4 a 7,6 s | 1,2 s |
+
+| Frase falada | whisper-small transcreveu |
+| --- | --- |
+| "Adicione uma etapa de emissão de nota fiscal antes do envio." | "adiciona uma etapa de emissão de nota fiscal antes do envio." |
+| "Diagrama de sequência entre cliente, API e banco de dados para cadastrar um produto." | "Diagrama de sequência entre cliente, API e banco de dados para cadastrar o produto." |
+| "Página inicial de uma loja de carros usados, com busca…" | "Pagemia Emicial deu uma loja de decados usados, convulsa por Marte…" |
+| "Fluxograma do processo de login: o usuário digita e-mail e senha…" | "O accelerando do processo de lobbying ou usuário digita a MilleCenho…" |
+
+A voz sintética de baixa qualidade derruba as frases longas, nos dois modelos. Com voz humana o resultado deve ser bem melhor (o Whisper small erra cerca de 8% das palavras em português, no teste FLEURS), mas **isso só você pode confirmar com o microfone**.
+
+### Teste de ponta a ponta sem microfone
+
+No navegador do painel, troquei o microfone por um "microfone falso" que toca a fala gravada. O caminho é o mesmo do uso real: `MediaRecorder`, conversão para 16 kHz, Whisper e texto na caixa.
+
+1. **Fluxograma:** fala 4 → 8,8 s depois da gravação, o texto certo apareceu na caixa → enviado ao Qwen → diagrama de sequência com bloco alternativo.
+2. **Wireframe:** fala 2 com transcrição ruim ("loja de decados") → o Qwen montou uma loja de **guitarras**. Isso mostra por que o texto vai para a caixa e não é enviado direto: você revisa antes.
+
+![Voz → diagrama de sequência](prints/fase4-voz-sequencia.png)
+
+![Voz → wireframe, a partir de uma transcrição ruim](prints/fase4-voz-wireframe.png)
+
+### Problemas encontrados e resolvidos
+
+- **O servidor do Vite devolve a página do app para arquivo inexistente.** O transformers.js pede arquivos opcionais (`processor_config.json`) e lia o HTML como configuração. Um plugin no `vite.config.mts` faz `/models/...` inexistente responder 404 (no servidor de desenvolvimento e no `preview`).
+- **No transformers.js 4.3, o caminho dos modelos precisa ser relativo** (`/models/`). Com a URL completa, ele não verifica quais arquivos opcionais existem e carrega o modelo sem o tokenizador.
+- **O transformers.js guardava uma segunda cópia dos modelos (centenas de MB) no armazenamento do navegador.** Desliguei (`useBrowserCache = false`): os arquivos já são locais.
+
+### Verificação
+
+- **6 testes** ([`voiceInput.test.tsx`](../packages/excalidraw/tests/voiceInput.test.tsx)), com microfone e `MediaRecorder` simulados:
+  - gravar, transcrever e preencher a caixa (aba de texto e aba wireframe);
+  - permissão negada;
+  - erro de transcrição;
+  - botão oculto quando o app não transcreve;
+  - junção do texto falado com o digitado.
+- **Typecheck e lint limpos.** O ESLint quebra ao analisar `vite.config.mts`, mas isso já acontecia antes; o `yarn test:code` não analisa arquivos `.mts`.
+- **Falta você testar no Firefox com o microfone de verdade.**
+
+### Limitações
+
+- Em WebAssembly com 1 thread, o whisper-small leva cerca de 1 s por segundo de fala. Com várias threads seria 2 a 3 vezes mais rápido, mas isso exige ligar o isolamento entre origens (COOP/COEP) na página, o que pode quebrar recursos externos do Excalidraw. Ficou de fora.
+- O WebGPU do Firefox no Linux ainda não vem ligado por padrão.
+- A primeira transcrição carrega o modelo, cerca de 1 s com os arquivos locais.
+
+## Fase 4b — Voz com um Whisper maior, fora do navegador (20/11/2026)
+
+**Motivo:** no teste com o microfone de verdade, o whisper-small no navegador errou demais. Você falou "**Apague tudo isso** e faça um diagrama do processo de vendas de sapatos em todo o Brasil", e ele escreveu "**A parte de tudo isso que foi feito, eu faço** o diagrama…".
+
+**O problema não era a CPU em si.** CPU e GPU fazem a mesma conta; a GPU só faz mais rápido. O problema era o tamanho do modelo: no navegador, o Whisper usa **1 núcleo** em WebAssembly, então só modelos pequenos cabiam no tempo. Rodando nativo, com o whisper.cpp, ele usa os núcleos com AVX-512 e um modelo grande passa a caber. A GPU continua com o Qwen: sobra só ~1,3 GB livre.
+
+### Como funciona
+
+- **Serviço `whisper-local`** (systemd de usuário, sobe com o PC, como o do Qwen):
+  - `whisper-server` (whisper.cpp v1.9.5) em `127.0.0.1:9932`;
+  - modelo **large-v3 q5_0**, CPU com 8 threads, decodificação gulosa;
+  - arquivos: [`servicos/start-whisper.sh`](servicos/start-whisper.sh) e [`servicos/whisper-local.service`](servicos/whisper-local.service);
+  - instalação: `ia-local/baixar-modelos.sh voz-servidor`.
+- **No app** ([`whisperServer.ts`](../excalidraw-app/ai/speech/whisperServer.ts)):
+  - o áudio gravado vira WAV 16 kHz no navegador e vai para o servidor local, junto com uma **lista de palavras de diagramas** (fluxograma, losango, apague, troque…). O Whisper usa essa lista como contexto e passa a preferir essas palavras;
+  - **se o servidor estiver fora, o app usa o Whisper do navegador** da fase 4, sem erro para você;
+  - silêncio (só "." ou só a lista de palavras de volta) conta como "nada ouvido";
+  - endereço em `VITE_APP_LOCAL_ASR_URL` (`.env.development`); vazio = só o navegador.
+
+### Medição
+
+18 falas: 6 pedidos × 3 vozes do Piper (`pt_BR-faber/cadu/jeff-medium`), incluindo a sua frase do "Apague". Os arquivos e o script estão em [`bench/voz-servidor/`](bench/voz-servidor/). O "erro de palavras" (WER) compara o texto falado com o transcrito, ignorando maiúsculas e pontuação. Tempo = por pedido, com o modelo já carregado, Ryzen 7 7700X, 8 threads.
+
+| Modelo (nativo) | Lista de palavras | Erro de palavras | Frases perfeitas | Tempo |
+| --- | --- | --- | --- | --- |
+| small q8 (o mesmo do navegador) | não | 13,4% | 3/18 | 1,0 s |
+| large-v3-turbo q8 | não | 8,8% | 10/18 | 4,2 s |
+| large-v3-turbo (f16) | não | 8,7% | 10/18 | 6,2 s |
+| large-v3 q5_0 | não | 7,2% | 11/18 | 7,1 s |
+| large-v3-turbo q8 | sim | 8,0% | 9/18 | 4,2 s |
+| **large-v3 q5_0, gulosa (escolhido)** | **sim** | **3,6%** | **12/18** | **6,7 s** |
+
+- 16 threads em vez de 8 não ganhou nada.
+- O mesmo whisper-small leva ~7 s no navegador e 1 s nativo.
+- Os erros que sobraram vêm quase todos da voz `jeff`, a pior das três ("Troque o losango" → "Troque os ambos").
+
+### Verificação
+
+- **No app**, com o "microfone falso" tocando a frase do "Apague" (voz `cadu`): 6,8 s depois de parar, a caixa recebeu **"Apague tudo isso e faça um diagrama do processo de vendas de sapatos em todo o Brasil."**, exata. O log do serviço confirma que o pedido passou por ele.
+- **Plano B:** com o serviço parado, a outra frase foi transcrita no navegador (9 s, com "lique" no lugar de "ligue"), e o console avisa a troca.
+- **6 testes novos** ([`whisperServer.test.ts`](../excalidraw-app/ai/speech/whisperServer.test.ts)):
+  - o formato do WAV;
+  - os campos enviados ao servidor;
+  - servidor fora do ar → plano B;
+  - erro do servidor repassado;
+  - silêncio e eco da lista de palavras tratados como "nada ouvido".
+- Typecheck e lint limpos.
+- **Falta você testar no Firefox com o microfone de verdade.**
+
+### Correção da fase 4
+
+Pelas notícias, o reconhecimento de voz local do Firefox chegou na versão **160** (10/11/2026), não na 161. Não testei a qualidade dele em português.
+
+### Limitações
+
+- Cerca de 7 s por pedido, quase fixo: o Whisper sempre processa uma janela de 30 s, mesmo para falas curtas.
+- Usa 8 núcleos durante a transcrição, com prioridade baixa (`Nice=5`).
+- Máquinas mais fracas: o large-v3 pode ficar lento demais. Nelas, use o large-v3-turbo (`WHISPER_MODEL=…/ggml-large-v3-turbo-q8_0.bin`) ou só o Whisper do navegador (deixe `VITE_APP_LOCAL_ASR_URL` vazio).

@@ -1,3 +1,4 @@
+import fs from "fs";
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
@@ -12,6 +13,40 @@ import { woff2BrowserPlugin } from "../scripts/woff2/woff2-vite-plugins";
 import { MERMAID_CHUNKS_LIST_NAME } from "./data/cacheMermaidChunks";
 
 import type { Plugin, Rollup } from "vite";
+
+/**
+ * Local AI models (fork ia-local) are served from public/models/. A missing
+ * optional file (e.g. a model without `processor_config.json`) must be a 404:
+ * the dev/preview servers otherwise answer with index.html, which
+ * transformers.js then tries to read as the file.
+ */
+const modelsNotFoundPlugin = (publicDir: string): Plugin => {
+  const handler = (
+    req: { url?: string },
+    res: { statusCode: number; end: () => void },
+    next: () => void,
+  ) => {
+    const url = (req.url || "").split("?")[0];
+    if (
+      url.startsWith("/models/") &&
+      !fs.existsSync(path.join(publicDir, decodeURIComponent(url)))
+    ) {
+      res.statusCode = 404;
+      res.end();
+      return;
+    }
+    next();
+  };
+  return {
+    name: "ia-local-models-not-found",
+    configureServer: (server) => {
+      server.middlewares.use(handler);
+    },
+    configurePreviewServer: (server) => {
+      server.middlewares.use(handler);
+    },
+  };
+};
 
 /**
  * Collects into `lazyChunkFileNames` the chunks reachable only via a dynamic
@@ -271,6 +306,7 @@ export default defineConfig(({ mode }) => {
       assetsInlineLimit: 0,
     },
     plugins: [
+      modelsNotFoundPlugin(path.resolve(__dirname, "../public")),
       Sitemap({
         hostname: "https://excalidraw.com",
         outDir: "build",
@@ -320,6 +356,9 @@ export default defineConfig(({ mode }) => {
             // lazy-loaded Firebase SDK, only needed for collab/sharing, which
             // require network anyway
             "**/firebaseSDK-*.js",
+            // local AI models (fork ia-local): hundreds of MB, loaded only
+            // when voice input is used
+            "models/**",
           ],
           // mermaid chunks are excluded here rather than via `globIgnores`
           // as their file names are arbitrary
